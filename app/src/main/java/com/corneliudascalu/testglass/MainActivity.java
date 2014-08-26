@@ -3,11 +3,13 @@ package com.corneliudascalu.testglass;
 import com.google.android.glass.app.Card;
 import com.google.android.glass.widget.CardScrollView;
 
+import com.corneliudascalu.testglass.service.BluetoothService;
 import com.corneliudascalu.testglass.util.RequestCodes;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -113,7 +115,8 @@ public class MainActivity extends Activity {
     }
 
     private void connectToDevice(BluetoothDevice device) {
-
+        ComponentName componentName = startService(
+                BluetoothService.createStartIntent(this, device));
     }
 
     public void getPairedDevices() {

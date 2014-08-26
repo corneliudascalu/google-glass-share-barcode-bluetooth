@@ -3,6 +3,7 @@
     package="com.corneliudascalu.testglass" >
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="com.google.android.glass.permission.DEVELOPMENT" />
 
     <application
@@ -27,6 +28,8 @@
             android:icon="@drawable/ic_glass_logo"
             android:label="@string/title_activity_device_chooser" >
         </activity>
+
+        <service android:name=".service.BluetoothService" />
     </application>
 
 </manifest>
