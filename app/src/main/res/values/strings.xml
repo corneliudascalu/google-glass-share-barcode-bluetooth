@@ -6,5 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_main_activity2">Hello World Immersion</string>
     <string name="glass_voice_trigger">Buy something</string>
+    <string name="title_activity_device_chooser">Choose Device</string>
+    <string name="choose_device">Choose device to connect to</string>
 
 </resources>

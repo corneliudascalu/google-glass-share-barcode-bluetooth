@@ -3,13 +3,20 @@ package com.corneliudascalu.testglass;
 import com.google.android.glass.app.Card;
 import com.google.android.glass.widget.CardScrollView;
 
+import com.corneliudascalu.testglass.util.RequestCodes;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * An {@link Activity} showing a tuggable "Hello World!" card.
@@ -27,6 +34,8 @@ public class MainActivity extends Activity {
 
     public static final int BT_ENABLE_REQUEST_CODE = 123;
 
+    public static final String EXTRA_DEVICES = "devices";
+
     /** {@link CardScrollView} to use as the main content view. */
     private CardScrollView mCardScroller;
 
@@ -41,51 +50,16 @@ public class MainActivity extends Activity {
 
         setContentView(mView);
 
-        /*mCardScroller = new CardScrollView(this);
-        mCardScroller.setAdapter(new CardScrollAdapter() {
-            @Override
-            public int getCount() {
-                return 1;
-            }
-
-            @Override
-            public Object getItem(int position) {
-                return mView;
-            }
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                return mView;
-            }
-
-            @Override
-            public int getPosition(Object item) {
-                if (mView.equals(item)) {
-                    return 0;
-                }
-                return AdapterView.INVALID_POSITION;
-            }
-        });
-        // Handle the TAP event.
-        mCardScroller.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Plays disallowed sound to indicate that TAP actions are not supported.
-                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                am.playSoundEffect(Sounds.DISALLOWED);
-            }
-        });
-        // setContentView(R.layout.main);*/
-
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Log.e(TAG, "Bluetooth not available");
         } else if (!bluetoothAdapter.isEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
-                    BT_ENABLE_REQUEST_CODE);
+                    RequestCodes.REQUEST_ENABLE_BLUETOOTH);
         } else {
             Log.d(TAG, "Bluetooth already enabled");
             Toast.makeText(this, "Bluetooth already enabled", Toast.LENGTH_SHORT).show();
+            getPairedDevices();
         }
 
     }
@@ -116,15 +90,53 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case BT_ENABLE_REQUEST_CODE:
+            case RequestCodes.REQUEST_ENABLE_BLUETOOTH:
                 if (resultCode == RESULT_OK) {
                     Log.d(TAG, "Bluetooth enabled");
                     Toast.makeText(this, "Bluetooth enabled", Toast.LENGTH_SHORT).show();
+                    getPairedDevices();
                 } else {
                     Log.e(TAG, "Failed to enable bluetooth");
                     Toast.makeText(this, "Failed to enable bluetooth", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case RequestCodes.REQUEST_SELECT_DEVICE:
+                if (resultCode == RESULT_OK) {
+                    BluetoothDevice device = data
+                            .getParcelableExtra(DeviceChooserActivity.EXTRA_SELECTED_DEVICE);
+                    connectToDevice(device);
+                } else {
+                    Toast.makeText(this, "Failed to select a device", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
+    }
+
+    private void connectToDevice(BluetoothDevice device) {
+
+    }
+
+    public void getPairedDevices() {
+        new AsyncTask<Void, Void, ArrayList<BluetoothDevice>>() {
+
+            @Override
+            protected ArrayList<BluetoothDevice> doInBackground(Void... params) {
+                BluetoothAdapter defaultAdapter = BluetoothAdapter.getDefaultAdapter();
+                Set<BluetoothDevice> devices = defaultAdapter.getBondedDevices();
+                return new ArrayList<BluetoothDevice>(devices);
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<BluetoothDevice> devices) {
+                super.onPostExecute(devices);
+                chooseDevice(devices);
+            }
+        }.execute();
+    }
+
+    public void chooseDevice(ArrayList<BluetoothDevice> devices) {
+        Intent intent = new Intent(this, DeviceChooserActivity.class);
+        intent.putParcelableArrayListExtra(EXTRA_DEVICES, devices);
+        startActivityForResult(intent, RequestCodes.REQUEST_SELECT_DEVICE);
     }
 }
