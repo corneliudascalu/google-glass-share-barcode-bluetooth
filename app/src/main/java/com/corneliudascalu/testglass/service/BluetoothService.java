@@ -27,7 +27,8 @@ public class BluetoothService extends Service {
 
     public static final String TAG = "BT_SERVICE";
 
-    public static final UUID BLUETOOTH_UUID = UUID.randomUUID();
+    public static final UUID BLUETOOTH_UUID = UUID
+            .fromString("e64cb46c-d317-467c-ae58-4b4b461f1e04");
 
     public static final int MSG_CONNECTED = 1;
 
@@ -124,8 +125,7 @@ public class BluetoothService extends Service {
 
             // Do work to manage the connection (in a separate thread)
             // startWritingThread(socket);
-            Message message = connectionHandler.obtainMessage(MSG_CONNECTED, socket);
-            handler.sendMessage(message);
+            handler.obtainMessage(MSG_CONNECTED, socket).sendToTarget();
         }
 
         /** Will cancel an in-progress connection, and close the socket */
