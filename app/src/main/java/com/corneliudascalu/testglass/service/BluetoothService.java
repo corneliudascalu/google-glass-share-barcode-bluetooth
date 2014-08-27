@@ -1,5 +1,10 @@
 package com.corneliudascalu.testglass.service;
 
+import com.corneliudascalu.testglass.service.exceptions.ConnectSocketException;
+import com.corneliudascalu.testglass.service.exceptions.CreateSocketException;
+import com.corneliudascalu.testglass.service.exceptions.NullSocketException;
+import com.corneliudascalu.testglass.service.exceptions.OpenStreamException;
+
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -12,19 +17,17 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>
  */
-public class BluetoothService extends Service {
+public class BluetoothService extends Service implements BluetoothClient, Handler.Callback {
 
     public static final String TAG = "BT_SERVICE";
 
@@ -41,6 +44,8 @@ public class BluetoothService extends Service {
 
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
 
+    public static final int RETRY_LIMIT = 3;
+
     private BluetoothAdapter bluetoothAdapter;
 
     private Handler handler;
@@ -49,13 +54,25 @@ public class BluetoothService extends Service {
 
     private LocalBinder binder = new LocalBinder();
 
-    private WorkThread workThread;
+    private BluetoothSocket socket;
+
+    private ClientUiCallback clientCallback;
+
+    public static final long INITIAL_RETRY_DELAY = 1000;
+
+    private ConcurrentLinkedQueue<String> queue;
 
     @Override
     public void onCreate() {
         super.onCreate();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        handler = new ServiceHandler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper(), this);
+
+        HandlerThread workThread = new HandlerThread("WorkThread");
+        workThread.start();
+        workHandler = new Handler(workThread.getLooper(), this);
+        queue = new ConcurrentLinkedQueue<String>();
+
     }
 
     public static Intent createStartIntent(Context context, BluetoothDevice device) {
@@ -68,7 +85,7 @@ public class BluetoothService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         BluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
         if (device != null) {
-            startConnectThread(device);
+            connectToDevice(device);
         } else {
             Log.e(TAG, "No device in the start command");
         }
@@ -80,188 +97,203 @@ public class BluetoothService extends Service {
         return binder;
     }
 
+    @Override
+    public void setCallback(ClientUiCallback callback) {
+        this.clientCallback = callback;
+    }
+
+    @Override
     public void connectToDevice(BluetoothDevice device) {
-        startConnectThread(device);
+        workHandler.obtainMessage(BtMessage.Connect.ordinal(), device).sendToTarget();
     }
 
+    @Override
+    public void disconnectFromDevice(BluetoothDevice device) {
+        workHandler.obtainMessage(BtMessage.Disconnect.ordinal(), device).sendToTarget();
+    }
+
+    @Override
     public void sendData(String data) {
-        if (workHandler != null) {
-            Message msg = Message.obtain();
-            msg.what = MSG_SEND_DATA;
-            msg.obj = data;
-            workHandler.sendMessage(msg);
+        workHandler.obtainMessage(BtMessage.Send.ordinal(), data).sendToTarget();
+    }
+
+    private void openConnectionToServer(BluetoothDevice device) {
+        try {
+            socket = createBtSocket(device);
+            connectSocket(socket);
+            handler.obtainMessage(BtMessage.Connected.ordinal()).sendToTarget();
+            checkQueue();
+        } catch (CreateSocketException e) {
+            handler.obtainMessage(BtMessage.ConnectionError.ordinal(), e).sendToTarget();
+        } catch (ConnectSocketException e) {
+            retrySocketConnectionBackoffFibonacci();
+        }
+
+    }
+
+    private BluetoothSocket createBtSocket(BluetoothDevice device) throws CreateSocketException {
+        try {
+            return device.createRfcommSocketToServiceRecord(BLUETOOTH_UUID);
+        } catch (IOException e) {
+            throw new CreateSocketException(e);
         }
     }
 
-    private void startConnectThread(BluetoothDevice device) {
-        ConnectThread connectThread = new ConnectThread(device);
-        connectThread.start();
-    }
-
-    private void startWritingThread(BluetoothSocket socket) {
-        /*workThread = new WorkThread(socket);
-        workThread.start();
-        workHandler = new ServiceHandler(workThread.getLooper());*/
-    }
-
-    private class ConnectThread extends Thread {
-
-        private final BluetoothSocket socket;
-
-        private final BluetoothDevice device;
-
-        public ConnectThread(BluetoothDevice device) {
-            // Use a temporary object that is later assigned to socket,
-            // because socket is final
-            BluetoothSocket tmp = null;
-            this.device = device;
-
-            // Get a BluetoothSocket to connect with the given BluetoothDevice
-            try {
-                // MY_UUID is the app's UUID string, also used by the server code
-                tmp = device.createRfcommSocketToServiceRecord(BLUETOOTH_UUID);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to create socket", e);
-            }
-            socket = tmp;
+    private void connectSocket(BluetoothSocket socket) throws ConnectSocketException {
+        try {
+            socket.connect();
+        } catch (IOException e) {
+            throw new ConnectSocketException(e);
         }
+    }
 
-        public void run() {
-            // Cancel discovery because it will slow down the connection
-            bluetoothAdapter.cancelDiscovery();
-
+    private void retrySocketConnectionBackoffFibonacci() {
+        // initiate backoff retries using the Fibonacci sequence
+        int retries = RETRY_LIMIT;
+        long previousDelay = INITIAL_RETRY_DELAY;
+        long delay = INITIAL_RETRY_DELAY;
+        while (retries > 0) {
             try {
-                // Connect the device through the socket. This will block
-                // until it succeeds or throws an exception
-                socket.connect();
-                OutputStream outputStream = socket.getOutputStream();
-                for (int i = 0; i < 10; i++) {
-                    byte[] bytes = ("Hello from Glass"+i).getBytes();
-                    outputStream.write(bytes);
-                    sleep(1000);
+                Thread.sleep(delay);
+                connectSocket(socket);
+                handler.obtainMessage(BtMessage.Connected.ordinal()).sendToTarget();
+                checkQueue();
+            } catch (ConnectSocketException e) {
+                retries--;
+                delay = previousDelay + delay;
+                previousDelay = delay - previousDelay;
+                if (retries == 0) {
+                    // abandon ship
+                    handler.obtainMessage(BtMessage.ConnectionError.ordinal(), e).sendToTarget();
                 }
-            } catch (IOException connectException) {
-                // Unable to connect; close the socket and get out
-                Log.e(TAG, "Failed to connect", connectException);
-                try {
-                    socket.close();
-                } catch (IOException closeException) {
-                    Log.e(TAG, "Failed to close socket", closeException);
-                }
-                return;
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-
-            // Do work to manage the connection (in a separate thread)
-            // startWritingThread(socket);
-            handler.obtainMessage(MSG_CONNECTED, socket).sendToTarget();
         }
+    }
 
-        /** Will cancel an in-progress connection, and close the socket */
-        public void cancel() {
+    private boolean writeDataToSocket(String data) {
+        try {
+            OutputStream outputStream = getSocketOutputStream();
+            writeToStream(outputStream, data);
+            handler.obtainMessage(BtMessage.Success.ordinal()).sendToTarget();
+            return true;
+        } catch (OpenStreamException e) {
+            handler.obtainMessage(BtMessage.ConnectionError.ordinal(), e).sendToTarget();
+            return false;
+        } catch (NullSocketException e) {
+            // socket destroyed, probably disconnected intentionally
+            return false;
+        } catch (ConnectSocketException e) {
+            //retry socket connection
+            retrySocketConnectionBackoffFibonacci();
+            return false;
+        }
+    }
+
+    private OutputStream getSocketOutputStream() throws OpenStreamException, NullSocketException {
+        if (socket != null) {
+            try {
+                return socket.getOutputStream();
+            } catch (IOException e) {
+                throw new OpenStreamException(e);
+            }
+        } else {
+            throw new NullSocketException(new IOException("Socket is null"));
+        }
+    }
+
+    private void writeToStream(OutputStream stream, String string) throws ConnectSocketException {
+        try {
+            stream.write(string.getBytes());
+        } catch (IOException e) {
+            //thrown if the socket is not open
+            throw new ConnectSocketException(e);
+        }
+    }
+
+    private void checkQueue() {
+        String queuedMessage = queue.peek();
+        if (queuedMessage != null) {
+            boolean success = writeDataToSocket(queuedMessage);
+            if (success) {
+                queue.poll();
+                checkQueue();
+            }
+        }
+    }
+
+    private void closeSocket() {
+        if (socket != null) {
             try {
                 socket.close();
+                socket = null;
             } catch (IOException e) {
             }
         }
     }
 
-    private class WorkThread extends HandlerThread {
 
-        private final BluetoothSocket socket;
+    @Override
+    public boolean handleMessage(Message msg) {
+        BtMessage message = BtMessage.valueOf(msg.what);
+        switch (message) {
 
-        private final InputStream inStream;
-
-        private final OutputStream outStream;
-
-        public WorkThread(BluetoothSocket socket) {
-            super("WorkThread", Process.THREAD_PRIORITY_BACKGROUND);
-            this.socket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the input and output streams, using temp objects because
-            // member streams are final
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-            }
-
-            inStream = tmpIn;
-            outStream = tmpOut;
+            case Connect:
+                BluetoothDevice device = (BluetoothDevice) msg.obj;
+                openConnectionToServer(device);
+                break;
+            case Disconnect:
+                closeSocket();
+                break;
+            case Send:
+                String data = (String) msg.obj;
+                queue.add(data);
+                checkQueue();
+                break;
+            case Connected:
+                clientCallback.onDeviceConnectionEstablished();
+                break;
+            case ConnectionError:
+                Exception exception = (Exception) msg.obj;
+                clientCallback.onDeviceConnectionFailed(exception);
+                break;
+            case Disconnected:
+                clientCallback.onDeviceDisconnected();
+                break;
+            case Success:
+                clientCallback.onMessageSent();
+                break;
+            case SendError:
+                clientCallback.onMessageFailed();
+                break;
         }
-
-        public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
-            int bytes; // bytes returned from read()
-
-            // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                try {
-                    // Read from the InputStream
-                    bytes = inStream.read(buffer);
-                    // Send the obtained bytes to the UI activity
-                    handler.obtainMessage(MSG_DATA_READ, bytes, -1, buffer)
-                            .sendToTarget();
-                } catch (IOException e) {
-                    break;
-                }
-            }
-        }
-
-        /* Call this from the main activity to send data to the remote device */
-        public void write(byte[] bytes) {
-            try {
-                outStream.write(bytes);
-            } catch (IOException e) {
-            }
-        }
-
-        /* Call this from the main activity to shutdown the connection */
-        public void cancel() {
-            try {
-                socket.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    class ServiceHandler extends Handler {
-
-
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case MSG_CONNECTED:
-                    BluetoothSocket socket = (BluetoothSocket) msg.obj;
-                    if (socket != null) {
-                        Log.d(TAG, "Connected successfully to phone");
-                        Toast.makeText(getApplicationContext(), "Connected successfully to phone",
-                                Toast.LENGTH_SHORT).show();
-                        startWritingThread(socket);
-                    } else {
-                        Log.e(TAG, "Failed to connect to phone");
-                    }
-                    break;
-                case MSG_SEND_DATA:
-                    String data = (String) msg.obj;
-                    workThread.write(data.getBytes());
-                    break;
-            }
-        }
+        msg.recycle();
+        return true;
     }
 
     public class LocalBinder extends Binder {
 
-        public BluetoothService getService() {
+        public BluetoothClient getService() {
             return BluetoothService.this;
         }
     }
+
+    public static enum BtMessage {
+        Connect,
+        Disconnect,
+        Send,
+        Connected,
+        ConnectionError,
+        Disconnected,
+        Success,
+        SendError;
+
+        public static BtMessage valueOf(int what) {
+            if (what < values().length) {
+                return values()[what];
+            }
+            return null;
+        }
+    }
+
 }
