@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -36,13 +37,19 @@ public class BluetoothService extends Service {
 
     public static final int MSG_DATA_READ = 3;
 
+    public static final int MSG_SEND_DATA = 4;
+
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
 
     private BluetoothAdapter bluetoothAdapter;
 
     private Handler handler;
 
-    private Handler connectionHandler;
+    private Handler workHandler;
+
+    private LocalBinder binder = new LocalBinder();
+
+    private WorkThread workThread;
 
     @Override
     public void onCreate() {
@@ -70,7 +77,20 @@ public class BluetoothService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
+    }
+
+    public void connectToDevice(BluetoothDevice device) {
+        startConnectThread(device);
+    }
+
+    public void sendData(String data) {
+        if (workHandler != null) {
+            Message msg = Message.obtain();
+            msg.what = MSG_SEND_DATA;
+            msg.obj = data;
+            workHandler.sendMessage(msg);
+        }
     }
 
     private void startConnectThread(BluetoothDevice device) {
@@ -79,7 +99,9 @@ public class BluetoothService extends Service {
     }
 
     private void startWritingThread(BluetoothSocket socket) {
-
+        workThread = new WorkThread(socket);
+        workThread.start();
+        workHandler = new ServiceHandler(workThread.getLooper());
     }
 
     private class ConnectThread extends Thread {
@@ -215,12 +237,23 @@ public class BluetoothService extends Service {
                         Log.d(TAG, "Connected successfully to phone");
                         Toast.makeText(getApplicationContext(), "Connected successfully to phone",
                                 Toast.LENGTH_SHORT).show();
-                        // startWritingThread(socket);
+                        startWritingThread(socket);
                     } else {
                         Log.e(TAG, "Failed to connect to phone");
                     }
                     break;
+                case MSG_SEND_DATA:
+                    String data = (String) msg.obj;
+                    workThread.write(data.getBytes());
+                    break;
             }
+        }
+    }
+
+    public class LocalBinder extends Binder {
+
+        public BluetoothService getService() {
+            return BluetoothService.this;
         }
     }
 }
