@@ -99,9 +99,9 @@ public class BluetoothService extends Service {
     }
 
     private void startWritingThread(BluetoothSocket socket) {
-        workThread = new WorkThread(socket);
+        /*workThread = new WorkThread(socket);
         workThread.start();
-        workHandler = new ServiceHandler(workThread.getLooper());
+        workHandler = new ServiceHandler(workThread.getLooper());*/
     }
 
     private class ConnectThread extends Thread {
@@ -134,6 +134,9 @@ public class BluetoothService extends Service {
                 // Connect the device through the socket. This will block
                 // until it succeeds or throws an exception
                 socket.connect();
+                OutputStream outputStream = socket.getOutputStream();
+                byte[] bytes = "Hello world".getBytes();
+                outputStream.write(bytes);
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 Log.e(TAG, "Failed to connect", connectException);

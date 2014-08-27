@@ -105,14 +105,14 @@ public class MainActivity extends Activity {
 
         card.setText(R.string.hello_world);
         cardView = card.getView();
-        cardView.setFocusable(true);
+        /*cardView.setFocusable(true);
         cardView.setFocusableInTouchMode(true);
         cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 bluetoothService.sendData("Hello world");
             }
-        });
+        });*/
         return cardView;
     }
 
