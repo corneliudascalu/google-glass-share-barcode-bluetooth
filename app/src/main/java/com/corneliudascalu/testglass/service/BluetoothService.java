@@ -135,8 +135,11 @@ public class BluetoothService extends Service {
                 // until it succeeds or throws an exception
                 socket.connect();
                 OutputStream outputStream = socket.getOutputStream();
-                byte[] bytes = "Hello world".getBytes();
-                outputStream.write(bytes);
+                for (int i = 0; i < 10; i++) {
+                    byte[] bytes = ("Hello from Glass"+i).getBytes();
+                    outputStream.write(bytes);
+                    sleep(1000);
+                }
             } catch (IOException connectException) {
                 // Unable to connect; close the socket and get out
                 Log.e(TAG, "Failed to connect", connectException);
@@ -146,6 +149,8 @@ public class BluetoothService extends Service {
                     Log.e(TAG, "Failed to close socket", closeException);
                 }
                 return;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             // Do work to manage the connection (in a separate thread)
