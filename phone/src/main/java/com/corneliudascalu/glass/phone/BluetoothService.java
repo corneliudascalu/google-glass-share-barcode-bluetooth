@@ -97,8 +97,8 @@ public class BluetoothService extends Service {
                 // If a connection was accepted
                 if (socket != null) {
                     // Do work to manage the connection (in a separate thread)
-                    EventBus.getDefault()
-                            .post(new Pair<Integer, String>(MSG_CONNECTED, "Connected"));
+                    EventBus.getDefault().post(new Pair<Integer, String>(MSG_CONNECTED,
+                            "Connected " + socket.getRemoteDevice().getName()));
                     manageConnectedSocket(socket);
                     try {
                         this.serverSocket.close();
@@ -110,7 +110,9 @@ public class BluetoothService extends Service {
             }
         }
 
-        /** Will cancel the listening serverSocket, and cause the thread to finish */
+        /**
+         * Will cancel the listening serverSocket, and cause the thread to finish
+         */
         public void cancel() {
             try {
                 serverSocket.close();
