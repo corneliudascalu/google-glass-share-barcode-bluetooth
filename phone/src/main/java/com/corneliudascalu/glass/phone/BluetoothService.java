@@ -10,7 +10,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Pair;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +47,6 @@ public class BluetoothService extends Service {
                     case MSG_READ_DATA:
                         byte[] bytes = (byte[]) msg.obj;
                         String data = new String(bytes);
-                        Toast.makeText(getApplicationContext(), "Read: " + data,Toast.LENGTH_SHORT).show();
                         EventBus.getDefault().post(new Pair<Integer, String>(MSG_READ_DATA, data));
                         break;
                 }
