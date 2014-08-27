@@ -52,6 +52,10 @@ public class MainActivity extends ActionBarActivity {
             case BluetoothService.MSG_CONNECTED:
                 textView.append("\n" + pair.second);
                 break;
+            case BluetoothService.MSG_READ_DATA:
+                textView.append("\n" + pair.second);
+                break;
+
         }
     }
 }

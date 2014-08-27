@@ -47,8 +47,9 @@ public class BluetoothService extends Service {
                 switch (msg.what) {
                     case MSG_READ_DATA:
                         byte[] bytes = (byte[]) msg.obj;
-                        Toast.makeText(getApplicationContext(), "Read: " + new String(bytes),
-                                Toast.LENGTH_SHORT).show();
+                        String data = new String(bytes);
+                        Toast.makeText(getApplicationContext(), "Read: " + data,Toast.LENGTH_SHORT).show();
+                        EventBus.getDefault().post(new Pair<Integer, String>(MSG_READ_DATA, data));
                         break;
                 }
             }
