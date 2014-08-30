@@ -27,12 +27,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>
  */
-public class BluetoothService extends Service implements BluetoothClient, Handler.Callback {
+public class BluetoothService extends Service implements BluetoothInterface, Handler.Callback {
 
     public static final String TAG = "BT_SERVICE";
 
     public static final UUID BLUETOOTH_UUID = UUID
-            .fromString("e64cb46c-d317-467c-ae58-4b4b461f1e04");
+            .fromString("E20A39F4-73F5-4BC4-A12F-17D1AD07A961");
 
     public static final int MSG_CONNECTED = 1;
 
@@ -271,9 +271,9 @@ public class BluetoothService extends Service implements BluetoothClient, Handle
         return true;
     }
 
-    public class LocalBinder extends Binder {
+    public class LocalBinder extends Binder implements ILocalBinder {
 
-        public BluetoothClient getService() {
+        public BluetoothInterface getService() {
             return BluetoothService.this;
         }
     }

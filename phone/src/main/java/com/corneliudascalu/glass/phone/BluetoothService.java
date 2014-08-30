@@ -23,7 +23,7 @@ import de.greenrobot.event.EventBus;
 public class BluetoothService extends Service {
 
     public static final java.util.UUID UUID = java.util.UUID
-            .fromString("e64cb46c-d317-467c-ae58-4b4b461f1e04");
+            .fromString("E20A39F4-73F5-4BC4-A12F-17D1AD07A961");
 
     public static final String SERVER_NAME = "GlassBtServer";
 
