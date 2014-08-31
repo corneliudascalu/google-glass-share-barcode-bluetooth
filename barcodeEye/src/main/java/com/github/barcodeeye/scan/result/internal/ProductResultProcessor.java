@@ -42,7 +42,8 @@ public class ProductResultProcessor extends ResultProcessor<ProductParsedResult>
 
         for (String key : PRODUCT_SEARCH_ENDPOINTS.keySet()) {
             CardPresenter cardPresenter = new CardPresenter();
-            cardPresenter.setText(getContext().getString(R.string.product_barcode_label) + key)
+            cardPresenter
+                    .setText(getContext().getString(R.string.product_barcode_label) + "\n" + key)
                     .setFooter(codeValue);
 
             String url = PRODUCT_SEARCH_ENDPOINTS.get(key);
