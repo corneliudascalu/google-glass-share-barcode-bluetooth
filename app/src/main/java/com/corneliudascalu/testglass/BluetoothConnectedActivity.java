@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -47,6 +48,13 @@ public class BluetoothConnectedActivity extends Activity implements ClientUiCall
             bound = false;
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        checkBluetooth();
+    }
 
     protected void checkBluetooth() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

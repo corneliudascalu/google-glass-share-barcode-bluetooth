@@ -1,12 +1,12 @@
 package com.corneliudascalu.testglass;
 
+import com.google.android.glass.view.WindowUtils;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
 
 import com.github.barcodeeye.scan.CaptureActivity;
 import com.github.barcodeeye.scan.api.CardPresenter;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
@@ -14,6 +14,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -22,7 +24,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultsActivity extends Activity {
+public class ResultsActivity extends BluetoothConnectedActivity {
 
     private static final String TAG = ResultsActivity.class.getSimpleName();
 
@@ -50,6 +52,8 @@ public class ResultsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(WindowUtils.FEATURE_VOICE_COMMANDS);
+
         Intent intent = getIntent();
         if (savedInstanceState != null) {
             readExtras(intent.getExtras());
@@ -74,6 +78,37 @@ public class ResultsActivity extends Activity {
         mCardScrollView.setOnItemClickListener(mOnItemClickListener);
 
         setContentView(mCardScrollView);
+    }
+
+    @Override
+    public boolean onCreatePanelMenu(int featureId, Menu menu) {
+        if (featureId == WindowUtils.FEATURE_VOICE_COMMANDS) {
+            getMenuInflater().inflate(R.menu.share_bt_menu, menu);
+            return true;
+        }
+        return super.onCreatePanelMenu(featureId, menu);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.share_bt_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        if (featureId == WindowUtils.FEATURE_VOICE_COMMANDS) {
+            switch (item.getItemId()) {
+                case R.id.shareBluetooth:
+                    CardPresenter cardPresenter = mCardPresenters
+                            .get(mCardScrollView.getSelectedItemPosition());
+                    if (cardPresenter != null) {
+                        sendData(cardPresenter.getFooter());
+                    }
+                    return true;
+            }
+        }
+        return super.onMenuItemSelected(featureId, item);
     }
 
     private void readExtras(Bundle extras) {

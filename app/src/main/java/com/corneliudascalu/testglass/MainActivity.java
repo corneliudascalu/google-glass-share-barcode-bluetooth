@@ -19,7 +19,6 @@ public class MainActivity extends BluetoothConnectedActivity {
 
         setContentView(buildView());
 
-        checkBluetooth();
     }
 
     /**
