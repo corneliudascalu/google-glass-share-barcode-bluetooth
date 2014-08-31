@@ -27,9 +27,12 @@ public class BluetoothService extends Service {
 
     public static final String SERVER_NAME = "GlassBtServer";
 
+    public static final int MSG_CONNECTED = 1;
+
     public static final int MSG_READ_DATA = 2;
 
-    public static final int MSG_CONNECTED = 1;
+    public static final int MSG_ERROR_RETRY = 3;
+
 
     private BluetoothAdapter bluetoothAdapter;
 
@@ -48,6 +51,9 @@ public class BluetoothService extends Service {
                         byte[] bytes = (byte[]) msg.obj;
                         String data = new String(bytes);
                         EventBus.getDefault().post(new Pair<Integer, String>(MSG_READ_DATA, data));
+                        break;
+                    case MSG_ERROR_RETRY:
+                        new AcceptThread().start();
                         break;
                 }
             }
@@ -162,6 +168,7 @@ public class BluetoothService extends Service {
                     handler.obtainMessage(MSG_READ_DATA, bytes, -1, buffer)
                             .sendToTarget();
                 } catch (IOException e) {
+                    handler.obtainMessage(MSG_ERROR_RETRY).sendToTarget();
                     break;
                 }
             }
