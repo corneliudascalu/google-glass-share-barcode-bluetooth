@@ -115,8 +115,10 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
 
     private void openConnectionToServer(BluetoothDevice device) {
         try {
-            if (socket == null || !socket.isConnected()) {
+            if (socket == null) {
                 socket = createBtSocket(device);
+            }
+            if (!socket.isConnected()) {
                 connectSocket(socket);
             }
             handler.obtainMessage(BtMessage.Connected.ordinal()).sendToTarget();
