@@ -1,16 +1,18 @@
 package com.github.barcodeeye.scan.result.internal;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.zxing.Result;
+import com.google.zxing.client.result.URIParsedResult;
+
+import com.github.barcodeeye.R;
+import com.github.barcodeeye.scan.api.CardPresenter;
+import com.github.barcodeeye.scan.result.ResultProcessor;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.github.barcodeeye.scan.api.CardPresenter;
-import com.github.barcodeeye.scan.result.ResultProcessor;
-import com.google.zxing.Result;
-import com.google.zxing.client.result.URIParsedResult;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UriResultProcessor extends ResultProcessor<URIParsedResult> {
 
@@ -26,9 +28,8 @@ public class UriResultProcessor extends ResultProcessor<URIParsedResult> {
         URIParsedResult parsedResult = getParsedResult();
 
         CardPresenter cardPresenter = new CardPresenter()
-                .setText("Open in Browser")
+                .setText(getContext().getString(R.string.website_barcode_label))
                 .setFooter(parsedResult.getDisplayResult());
-
 
         if (getPhotoUri() != null) {
             cardPresenter.addImage(getPhotoUri());

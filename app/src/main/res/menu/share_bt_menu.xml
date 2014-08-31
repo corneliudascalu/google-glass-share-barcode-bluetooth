@@ -2,5 +2,10 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/shareBluetooth" android:title="@string/add_to_cart"/>
+    <item
+        android:id="@+id/shareBluetooth"
+        android:title="@string/add_to_cart_command" />
+    <item
+        android:id="@+id/moreDetails"
+        android:title="@string/more_details_command" />
 </menu>

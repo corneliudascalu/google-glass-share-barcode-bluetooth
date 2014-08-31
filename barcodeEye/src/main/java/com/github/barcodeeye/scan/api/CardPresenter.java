@@ -1,9 +1,6 @@
 package com.github.barcodeeye.scan.api;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.glass.app.Card;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -14,7 +11,9 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 
-import com.google.android.glass.app.Card;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CardPresenter implements Parcelable {
 
@@ -86,7 +85,7 @@ public class CardPresenter implements Parcelable {
     public View getCardView(Context context) {
         Card card = new Card(context);
         card.setText(mText);
-        card.setFootnote(mFooter);
+        // card.setFootnote(mFooter);
         for (Uri uri : mImages) {
             if (uri != null) {
                 Log.w(TAG, "ImageUri: " + uri.toString());

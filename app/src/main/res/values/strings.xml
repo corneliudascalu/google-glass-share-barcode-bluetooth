@@ -7,6 +7,7 @@
     <string name="glass_voice_trigger">Buy something</string>
     <string name="title_activity_device_chooser">Choose Device</string>
     <string name="choose_device">Choose device to connect to</string>
-    <string name="add_to_cart">Add to cart</string>
+    <string name="add_to_cart_command">Add to cart</string>
+    <string name="more_details_command">More details</string>
 
 </resources>

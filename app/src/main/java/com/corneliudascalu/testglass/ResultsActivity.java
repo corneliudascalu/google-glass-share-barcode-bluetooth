@@ -18,8 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +73,6 @@ public class ResultsActivity extends BluetoothConnectedActivity {
         mCardScrollView.setAdapter(new CardScrollViewAdapter(this,
                 mCardPresenters));
         mCardScrollView.activate();
-        mCardScrollView.setOnItemClickListener(mOnItemClickListener);
 
         setContentView(mCardScrollView);
     }
@@ -105,6 +102,9 @@ public class ResultsActivity extends BluetoothConnectedActivity {
                     if (cardPresenter != null) {
                         sendData(cardPresenter.getFooter());
                     }
+                    return true;
+                case R.id.moreDetails:
+                    sendItemPendingIntent(mCardScrollView.getSelectedItemPosition());
                     return true;
             }
         }
@@ -152,22 +152,17 @@ public class ResultsActivity extends BluetoothConnectedActivity {
         }
     }
 
-    private final OnItemClickListener mOnItemClickListener = new OnItemClickListener() {
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position,
-                long id) {
-            CardPresenter cardPresenter = mCardPresenters.get(position);
-            PendingIntent pendingIntent = cardPresenter.getPendingIntent();
-            if (pendingIntent != null) {
-                try {
-                    pendingIntent.send();
-                } catch (CanceledException e) {
-                    Log.w(TAG, e.getMessage());
-                }
-            } else {
-                Log.w(TAG, "No PendingIntent attached to card!");
+    private void sendItemPendingIntent(int position) {
+        CardPresenter cardPresenter = mCardPresenters.get(position);
+        PendingIntent pendingIntent = cardPresenter.getPendingIntent();
+        if (pendingIntent != null) {
+            try {
+                pendingIntent.send();
+            } catch (CanceledException e) {
+                Log.w(TAG, e.getMessage());
             }
+        } else {
+            Log.w(TAG, "No PendingIntent attached to card!");
         }
-    };
+    }
 }
