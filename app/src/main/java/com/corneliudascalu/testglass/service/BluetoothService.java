@@ -42,6 +42,8 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
 
     public static final int RETRY_LIMIT = 3;
 
+    public static final int RECREATE_SOCKET_RETRIES = 2;
+
 
     private Handler handler;
 
@@ -56,6 +58,10 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
     public static final long INITIAL_RETRY_DELAY = 1000;
 
     private ConcurrentLinkedQueue<String> queue;
+
+    private BluetoothDevice device;
+
+    private int recreateSocketRetries = RECREATE_SOCKET_RETRIES;
 
     @Override
     public void onCreate() {
@@ -152,19 +158,32 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
         int retries = RETRY_LIMIT;
         long previousDelay = INITIAL_RETRY_DELAY;
         long delay = INITIAL_RETRY_DELAY;
-        while (retries > 0) {
+        while (retries >= 0) {
             try {
                 Thread.sleep(delay);
+                Log.d(TAG, "Reconnecting socket. Retries left: " + retries);
                 connectSocket(socket);
+                retries = RETRY_LIMIT;
+                recreateSocketRetries = RECREATE_SOCKET_RETRIES;
                 handler.obtainMessage(BtMessage.Connected.ordinal()).sendToTarget();
                 checkQueue();
             } catch (ConnectSocketException e) {
+                Log.d(TAG, "Reconnecting failed");
                 retries--;
                 delay = previousDelay + delay;
                 previousDelay = delay - previousDelay;
-                if (retries == 0) {
-                    // abandon ship
-                    handler.obtainMessage(BtMessage.ConnectionError.ordinal(), e).sendToTarget();
+                if (retries == -1) {
+                    if (recreateSocketRetries > 0) {
+                        Log.d(TAG, "Recreating socket. Retries left: " + recreateSocketRetries);
+                        recreateSocketRetries--;
+                        retries = RETRY_LIMIT;
+                        closeSocket();
+                        openConnectionToServer(device);
+                    } else {
+                        // abandon ship
+                        handler.obtainMessage(BtMessage.ConnectionError.ordinal(), e)
+                                .sendToTarget();
+                    }
                 }
             } catch (InterruptedException e) {
             }
@@ -239,7 +258,7 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
         switch (message) {
 
             case Connect:
-                BluetoothDevice device = (BluetoothDevice) msg.obj;
+                device = (BluetoothDevice) msg.obj;
                 openConnectionToServer(device);
                 break;
             case Disconnect:
