@@ -49,12 +49,20 @@ public class MainActivity extends Activity implements ClientUiCallback {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
         BluetoothDevice bluetoothDevice = bondedDevices.iterator().next();
         startCommunicationService(bluetoothDevice);
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (bound) {
+            unbindService(serviceConnection);
+            bound = false;
+        }
     }
 
     private void startCommunicationService(BluetoothDevice bluetoothDevice) {
@@ -72,22 +80,13 @@ public class MainActivity extends Activity implements ClientUiCallback {
         bindService(intent, serviceConnection, BIND_AUTO_CREATE);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (bound) {
-            unbindService(serviceConnection);
-            bound = false;
-        }
-    }
-
     /**
      * Builds a Glass styled "Hello World!" view using the {@link Card} class.
      */
     private View buildView() {
         Card card = new Card(this);
 
-        card.setText(R.string.hello_world);
+        card.setText(R.string.preparing_message);
         cardView = card.getView();
 
         return cardView;
