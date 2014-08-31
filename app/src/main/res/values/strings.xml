@@ -3,8 +3,7 @@
 
     <string name="app_name">TestGlass</string>
     <string name="title_activity_main">Hello World Immersion</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_main_activity2">Hello World Immersion</string>
+    <string name="preparing_message">Preparing connection</string>
     <string name="glass_voice_trigger">Buy something</string>
     <string name="title_activity_device_chooser">Choose Device</string>
     <string name="choose_device">Choose device to connect to</string>
