@@ -5,4 +5,4 @@
 /.idea/
 .DS_Store
 /build
-/barcodeEye/build/
+barcodeEye/build/
