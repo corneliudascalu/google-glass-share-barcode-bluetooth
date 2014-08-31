@@ -6,10 +6,8 @@ import com.corneliudascalu.testglass.service.exceptions.NullSocketException;
 import com.corneliudascalu.testglass.service.exceptions.OpenStreamException;
 
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
@@ -42,11 +40,8 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
 
     public static final int MSG_SEND_DATA = 4;
 
-    public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
-
     public static final int RETRY_LIMIT = 3;
 
-    private BluetoothAdapter bluetoothAdapter;
 
     private Handler handler;
 
@@ -65,29 +60,24 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
     @Override
     public void onCreate() {
         super.onCreate();
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         handler = new Handler(Looper.getMainLooper(), this);
 
         HandlerThread workThread = new HandlerThread("WorkThread");
         workThread.start();
         workHandler = new Handler(workThread.getLooper(), this);
         queue = new ConcurrentLinkedQueue<String>();
-
-    }
-
-    public static Intent createStartIntent(Context context, BluetoothDevice device) {
-        Intent intent = new Intent(context, BluetoothService.class);
-        intent.putExtra(EXTRA_DEVICE, device);
-        return intent;
+        clientCallback = new EmptyUiCallback();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        BluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
-        if (device != null) {
-            connectToDevice(device);
-        } else {
-            Log.e(TAG, "No device in the start command");
+        if (intent != null) {
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothInterface.EXTRA_DEVICE);
+            if (device != null) {
+                connectToDevice(device);
+            } else {
+                Log.e(TAG, "No device in the start command");
+            }
         }
         return START_STICKY;
     }
@@ -95,6 +85,12 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        closeSocket();
     }
 
     @Override
@@ -119,8 +115,10 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
 
     private void openConnectionToServer(BluetoothDevice device) {
         try {
-            socket = createBtSocket(device);
-            connectSocket(socket);
+            if (socket == null || !socket.isConnected()) {
+                socket = createBtSocket(device);
+                connectSocket(socket);
+            }
             handler.obtainMessage(BtMessage.Connected.ordinal()).sendToTarget();
             checkQueue();
         } catch (CreateSocketException e) {
@@ -267,7 +265,6 @@ public class BluetoothService extends Service implements BluetoothInterface, Han
                 clientCallback.onMessageFailed();
                 break;
         }
-        msg.recycle();
         return true;
     }
 
