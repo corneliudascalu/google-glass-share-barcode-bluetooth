@@ -7,6 +7,7 @@ import com.corneliudascalu.testglass.service.BluetoothService;
 import com.corneliudascalu.testglass.service.ClientUiCallback;
 import com.corneliudascalu.testglass.service.GattServerService;
 import com.corneliudascalu.testglass.service.ILocalBinder;
+import com.github.barcodeeye.scan.CaptureActivity;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -111,7 +112,7 @@ public class MainActivity extends Activity implements ClientUiCallback {
     public void onDeviceConnectionEstablished() {
         Log.d(TAG, "Connected to device");
         Toast.makeText(this, "Connected to device", Toast.LENGTH_SHORT).show();
-        bluetoothInterface.sendData("Hello from Google Glass");
+        startActivity(CaptureActivity.newIntent(this));
     }
 
     @Override
