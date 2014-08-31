@@ -3,6 +3,7 @@ package com.corneliudascalu.testglass;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
 
+import com.github.barcodeeye.scan.CaptureActivity;
 import com.github.barcodeeye.scan.api.CardPresenter;
 
 import android.app.Activity;
@@ -24,10 +25,13 @@ import java.util.List;
 public class ResultsActivity extends Activity {
 
     private static final String TAG = ResultsActivity.class.getSimpleName();
+
     private static final String EXTRA_CARDS = "EXTRA_CARDS";
+
     private static final String EXTRA_IMAGE_URI = "EXTRA_IMAGE_URI";
 
     private final List<CardPresenter> mCardPresenters = new ArrayList<CardPresenter>();
+
     private CardScrollView mCardScrollView;
 
     public static Intent newIntent(Context context,
@@ -73,7 +77,7 @@ public class ResultsActivity extends Activity {
     }
 
     private void readExtras(Bundle extras) {
-        Parcelable[] parcelCardsArray = extras.getParcelableArray(EXTRA_CARDS);
+        Parcelable[] parcelCardsArray = extras.getParcelableArray(CaptureActivity.EXTRA_CARDS);
         for (Parcelable aParcelCardsArray : parcelCardsArray) {
             mCardPresenters.add((CardPresenter) aParcelCardsArray);
         }
@@ -82,6 +86,7 @@ public class ResultsActivity extends Activity {
     public static class CardScrollViewAdapter extends CardScrollAdapter {
 
         private final Context mContext;
+
         private final List<CardPresenter> mCardPresenters;
 
         public CardScrollViewAdapter(Context context,
