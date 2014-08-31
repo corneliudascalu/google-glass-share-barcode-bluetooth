@@ -40,7 +40,7 @@ public class DeviceChooserActivity extends Activity {
         ButterKnife.inject(this, this);
 
         ArrayList<BluetoothDevice> devices = getIntent().getParcelableArrayListExtra(
-                MainActivity.EXTRA_DEVICES);
+                BluetoothConnectedActivity.EXTRA_DEVICES);
 
         adapter = new DeviceCardScrollAdapter(this, devices);
         mCardScroller.setAdapter(adapter);
