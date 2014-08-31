@@ -1,10 +1,10 @@
 package com.corneliudascalu.testglass;
 
 import com.google.android.glass.app.Card;
-import com.google.android.glass.widget.CardScrollView;
 
 import com.corneliudascalu.testglass.service.BluetoothInterface;
 import com.corneliudascalu.testglass.service.BluetoothService;
+import com.corneliudascalu.testglass.service.ClientUiCallback;
 import com.corneliudascalu.testglass.service.GattServerService;
 import com.corneliudascalu.testglass.service.ILocalBinder;
 
@@ -18,20 +18,11 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.Set;
 
-/**
- * An {@link Activity} showing a tuggable "Hello World!" card.
- * <p>
- * The main content view is composed of a one-card {@link CardScrollView} that provides tugging
- * feedback to the user when swipe gestures are detected.
- * If your Glassware intends to intercept swipe gestures, you should set the content view directly
- * and use a {@link com.google.android.glass.touchpad.GestureDetector}.
- *
- * @see <a href="https://developers.google.com/glass/develop/gdk/touch">GDK Developer Guide</a>
- */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ClientUiCallback {
 
     public static final String TAG = "Main";
 
@@ -76,13 +67,8 @@ public class MainActivity extends Activity {
                 break;
         }
         intent.putExtra(BluetoothInterface.EXTRA_DEVICE, bluetoothDevice);
+        startService(intent);
         bindService(intent, serviceConnection, BIND_AUTO_CREATE);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        cardView.requestFocus();
     }
 
     @Override
@@ -111,6 +97,7 @@ public class MainActivity extends Activity {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             bluetoothInterface = ((ILocalBinder) service).getService();
+            bluetoothInterface.setCallback(MainActivity.this);
             bound = true;
         }
 
@@ -119,4 +106,35 @@ public class MainActivity extends Activity {
             bound = false;
         }
     };
+
+    @Override
+    public void onDeviceConnectionEstablished() {
+        Log.d(TAG, "Connected to device");
+        Toast.makeText(this, "Connected to device", Toast.LENGTH_SHORT).show();
+        bluetoothInterface.sendData("Hello from Google Glass");
+    }
+
+    @Override
+    public void onDeviceConnectionFailed(Exception exception) {
+        Log.e(TAG, "Failed to connect to device", exception);
+        Toast.makeText(this, "Failed to connect to device", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeviceDisconnected() {
+        Log.d(TAG, "Disconnected from device");
+        Toast.makeText(this, "Disconnected from device", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onMessageSent() {
+        Log.d(TAG, "Message sent successfully");
+        Toast.makeText(this, "Message sent successfully", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onMessageFailed() {
+        Log.d(TAG, "Message failed");
+        Toast.makeText(this, "Message failed. Please try again", Toast.LENGTH_SHORT).show();
+    }
 }
