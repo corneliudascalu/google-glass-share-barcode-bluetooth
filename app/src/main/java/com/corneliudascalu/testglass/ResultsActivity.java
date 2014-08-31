@@ -1,7 +1,9 @@
-package com.github.barcodeeye.scan;
+package com.corneliudascalu.testglass;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.glass.widget.CardScrollAdapter;
+import com.google.android.glass.widget.CardScrollView;
+
+import com.github.barcodeeye.scan.api.CardPresenter;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -16,9 +18,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
-import com.github.barcodeeye.scan.api.CardPresenter;
-import com.google.android.glass.widget.CardScrollAdapter;
-import com.google.android.glass.widget.CardScrollView;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResultsActivity extends Activity {
 
@@ -73,8 +74,8 @@ public class ResultsActivity extends Activity {
 
     private void readExtras(Bundle extras) {
         Parcelable[] parcelCardsArray = extras.getParcelableArray(EXTRA_CARDS);
-        for (int i = 0; i < parcelCardsArray.length; i++) {
-            mCardPresenters.add((CardPresenter) parcelCardsArray[i]);
+        for (Parcelable aParcelCardsArray : parcelCardsArray) {
+            mCardPresenters.add((CardPresenter) aParcelCardsArray);
         }
     }
 

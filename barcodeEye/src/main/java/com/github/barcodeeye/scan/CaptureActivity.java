@@ -13,10 +13,24 @@
 
 package com.github.barcodeeye.scan;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Map;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.Result;
+import com.google.zxing.ResultMetadataType;
+import com.google.zxing.ResultPoint;
+import com.google.zxing.client.android.camera.CameraManager;
+
+import com.github.barcodeeye.BaseGlassActivity;
+import com.github.barcodeeye.R;
+import com.github.barcodeeye.image.ImageManager;
+import com.github.barcodeeye.migrated.AmbientLightManager;
+import com.github.barcodeeye.migrated.BeepManager;
+import com.github.barcodeeye.migrated.FinishListener;
+import com.github.barcodeeye.migrated.InactivityTimer;
+import com.github.barcodeeye.scan.api.CardPresenter;
+import com.github.barcodeeye.scan.result.ResultProcessor;
+import com.github.barcodeeye.scan.result.ResultProcessorFactory;
+import com.github.barcodeeye.scan.ui.ViewfinderView;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -33,22 +47,11 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.github.barcodeeye.BaseGlassActivity;
-import com.github.barcodeeye.R;
-import com.github.barcodeeye.image.ImageManager;
-import com.github.barcodeeye.migrated.AmbientLightManager;
-import com.github.barcodeeye.migrated.BeepManager;
-import com.github.barcodeeye.migrated.FinishListener;
-import com.github.barcodeeye.migrated.InactivityTimer;
-import com.github.barcodeeye.scan.result.ResultProcessor;
-import com.github.barcodeeye.scan.result.ResultProcessorFactory;
-import com.github.barcodeeye.scan.ui.ViewfinderView;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.Result;
-import com.google.zxing.ResultMetadataType;
-import com.google.zxing.ResultPoint;
-import com.google.zxing.client.android.camera.CameraManager;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -73,15 +76,28 @@ public final class CaptureActivity extends BaseGlassActivity implements
                     ResultMetadataType.ERROR_CORRECTION_LEVEL,
                     ResultMetadataType.POSSIBLE_COUNTRY);
 
+    public static final String EXTRA_CARDS = CaptureActivity.class.getName() + "extraCards";
+
+    public static final String ACTION_VIEW_CAPTURE_RESULTS = "ACTION_VIEW_CAPTURE_RESULTS";
+
     private CameraManager mCameraManager;
+
     private CaptureActivityHandler mHandler;
+
     private Result mSavedResultToShow;
+
     private ViewfinderView mViewfinderView;
+
     private boolean mHasSurface;
+
     private Map<DecodeHintType, ?> mDecodeHints;
+
     private InactivityTimer mInactivityTimer;
+
     private BeepManager mBeepManager;
+
     private AmbientLightManager mAmbientLightManager;
+
     private ImageManager mImageManager;
 
     public static Intent newIntent(Context context) {
@@ -221,12 +237,9 @@ public final class CaptureActivity extends BaseGlassActivity implements
      * A valid barcode has been found, so give an indication of success and show
      * the results.
      *
-     * @param rawResult
-     *            The contents of the barcode.
-     * @param scaleFactor
-     *            amount by which thumbnail was scaled
-     * @param barcode
-     *            A greyscale bitmap of the camera data which was decoded.
+     * @param rawResult   The contents of the barcode.
+     * @param scaleFactor amount by which thumbnail was scaled
+     * @param barcode     A greyscale bitmap of the camera data which was decoded.
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         mInactivityTimer.onActivity();
@@ -245,12 +258,9 @@ public final class CaptureActivity extends BaseGlassActivity implements
      * Superimpose a line for 1D or dots for 2D to highlight the key features of
      * the barcode.
      *
-     * @param barcode
-     *            A bitmap of the captured image.
-     * @param scaleFactor
-     *            amount by which thumbnail was scaled
-     * @param rawResult
-     *            The decoded results which contains the points to draw.
+     * @param barcode     A bitmap of the captured image.
+     * @param scaleFactor amount by which thumbnail was scaled
+     * @param rawResult   The decoded results which contains the points to draw.
      */
     private static void drawResultPoints(Bitmap barcode, float scaleFactor,
             Result rawResult, int color) {
@@ -264,7 +274,7 @@ public final class CaptureActivity extends BaseGlassActivity implements
                 drawLine(canvas, paint, points[0], points[1], scaleFactor);
             } else if (points.length == 4
                     && (rawResult.getBarcodeFormat() == BarcodeFormat.UPC_A || rawResult
-                            .getBarcodeFormat() == BarcodeFormat.EAN_13)) {
+                    .getBarcodeFormat() == BarcodeFormat.EAN_13)) {
                 // Hacky special case -- draw two lines, for the barcode and metadata
                 drawLine(canvas, paint, points[0], points[1], scaleFactor);
                 drawLine(canvas, paint, points[2], points[3], scaleFactor);
@@ -303,8 +313,13 @@ public final class CaptureActivity extends BaseGlassActivity implements
         ResultProcessor<?> processor = ResultProcessorFactory
                 .makeResultProcessor(this, rawResult, imageUri);
 
-        startActivity(ResultsActivity.newIntent(this,
-                processor.getCardResults()));
+        List<CardPresenter> cardResults = processor.getCardResults();
+        Intent intent = new Intent(ACTION_VIEW_CAPTURE_RESULTS);
+        if (cardResults != null) {
+            intent.putExtra(EXTRA_CARDS,
+                    cardResults.toArray(new CardPresenter[cardResults.size()]));
+        }
+        startActivity(intent);
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {
