@@ -5,14 +5,22 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -23,6 +31,9 @@ public class MainActivity extends ActionBarActivity {
 
     @InjectView(R.id.text)
     TextView textView;
+
+    @InjectView(R.id.logo)
+    ImageView logo;
 
     private DateTimeFormatter formatter;
 
@@ -40,6 +51,15 @@ public class MainActivity extends ActionBarActivity {
 
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setTypeface(Typeface.MONOSPACE);
+        logo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onEventMainThread(new Pair<Integer, String>(
+                        BluetoothService.MSG_READ_DATA,
+                        "http://d.android.com"
+                ));
+            }
+        });
     }
 
     @Override
@@ -84,8 +104,25 @@ public class MainActivity extends ActionBarActivity {
                 //textView.setText(dateTime.toString(formatter) + " - "+ pair.second + "\n" + textView.getText());
                 textView.append(dateTime.toString(formatter) + " - "
                         + pair.second + "\n");
+                handleData(pair.second);
                 break;
 
+        }
+    }
+
+    private void handleData(String second) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(second));
+
+        PackageManager manager = getApplicationContext().getPackageManager();
+        List<ResolveInfo> activities = manager.queryIntentActivities(intent, 0);
+        if (activities.size() > 0) {
+            //Then there is application can handle your intent
+            startActivity(intent);
+        } else {
+            //No Application can handle your intent
+            Toast.makeText(this, "There is no application to handle this barcode",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 }
