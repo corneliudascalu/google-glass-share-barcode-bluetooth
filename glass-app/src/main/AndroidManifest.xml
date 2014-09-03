@@ -17,19 +17,20 @@
             <intent-filter>
                 <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
             </intent-filter>
-
             <meta-data
                 android:name="com.google.android.glass.VoiceTrigger"
-                android:value="@xml/connect_voice_trigger" />
+                android:resource="@xml/connect_voice_trigger" />
         </activity>
-        <activity android:name=".LaunchCaptureActivity">
+        <activity
+            android:name=".LaunchCaptureActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
             </intent-filter>
 
             <meta-data
                 android:name="com.google.android.glass.VoiceTrigger"
-                android:value="@xml/scan_barcode_voice_trigger" />
+                android:resource="@xml/scan_barcode_voice_trigger" />
         </activity>
         <activity android:name=".ResultsActivity">
             <intent-filter>
