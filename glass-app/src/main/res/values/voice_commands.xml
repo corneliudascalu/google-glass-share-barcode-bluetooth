@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_device_command">Select phone</string>
+    <string name="scan_barcode_command">Buy something</string>
+</resources>

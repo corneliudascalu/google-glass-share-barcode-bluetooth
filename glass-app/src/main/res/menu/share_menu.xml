@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/add_to_cart"
+        android:title="Add to cart" />
+    <item
+        android:id="@+id/try_again"
+        android:title="Try again" />
+</menu>
