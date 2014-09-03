@@ -4,5 +4,6 @@
     <string name="app_name">OSF Google Glass</string>
     <string name="action_clear">Clear Log</string>
     <string name="connect">Connect</string>
+    <string name="about">About</string>
 
 </resources>
