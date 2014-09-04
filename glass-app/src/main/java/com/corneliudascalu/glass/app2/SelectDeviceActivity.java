@@ -2,6 +2,8 @@ package com.corneliudascalu.glass.app2;
 
 import com.google.android.glass.widget.CardScrollView;
 
+import com.corneliudascalu.glass.app2.interactor.GetDevicesUseCase;
+import com.corneliudascalu.glass.app2.interactor.RoughGetDevicesUseCase;
 import com.corneliudascalu.glass.app2.model.Device;
 
 import android.app.Activity;
@@ -11,12 +13,12 @@ import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class SelectDeviceActivity extends Activity {
+public class SelectDeviceActivity extends Activity implements GetDevicesUseCase.Callback {
 
 
     private DeviceCardAdapter adapter;
@@ -44,19 +46,7 @@ public class SelectDeviceActivity extends Activity {
             }
         });
 
-        view.postDelayed(new Runnable() {
-            ArrayList<Device> devices = new ArrayList<Device>(10);
-
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.GONE);
-                for (int i = 0; i < 10; i++) {
-                    devices.add(new Device());
-                }
-                adapter.setDevices(SelectDeviceActivity.this, devices);
-                view.setVisibility(View.VISIBLE);
-            }
-        }, 2000);
+        new RoughGetDevicesUseCase().execute(this);
     }
 
     @Override
@@ -69,5 +59,17 @@ public class SelectDeviceActivity extends Activity {
     protected void onPause() {
         super.onPause();
         view.deactivate();
+    }
+
+    @Override
+    public void onDevicesLoaded(List<Device> devices) {
+        progressBar.setVisibility(View.GONE);
+        view.setVisibility(View.VISIBLE);
+        adapter.setDevices(this, devices);
+    }
+
+    @Override
+    public void onError(Throwable error) {
+        Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
     }
 }
