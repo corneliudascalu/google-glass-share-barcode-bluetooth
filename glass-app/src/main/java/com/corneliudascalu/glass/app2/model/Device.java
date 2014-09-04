@@ -12,8 +12,8 @@ public class Device {
     private String token;
 
     public Device() {
-        name = RandomStringUtils.random(7);
-        token = RandomStringUtils.random(20);
+        name = RandomStringUtils.randomAlphabetic(7);
+        token = RandomStringUtils.randomAlphanumeric(20);
     }
 
     public Device(String name, String token) {

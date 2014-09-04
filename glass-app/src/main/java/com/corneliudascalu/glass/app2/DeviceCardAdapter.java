@@ -10,15 +10,19 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>
  */
 public class DeviceCardAdapter extends CardScrollAdapter {
 
-    private ArrayList<Device> devices = new ArrayList<Device>();
+    private List<Device> devices = new ArrayList<Device>();
 
     private ArrayList<Card> cards = new ArrayList<Card>();
+
+    public DeviceCardAdapter(Context context) {
+    }
 
     @Override
     public int getCount() {
@@ -27,7 +31,7 @@ public class DeviceCardAdapter extends CardScrollAdapter {
 
     @Override
     public Object getItem(int i) {
-        return cards.get(i);
+        return devices.get(i);
     }
 
     @Override
@@ -40,7 +44,7 @@ public class DeviceCardAdapter extends CardScrollAdapter {
         return 0;
     }
 
-    public void setDevices(Context context, ArrayList<Device> devices) {
+    public void setDevices(Context context, List<Device> devices) {
         this.devices = devices;
         cards.clear();
         for (Device device : devices) {

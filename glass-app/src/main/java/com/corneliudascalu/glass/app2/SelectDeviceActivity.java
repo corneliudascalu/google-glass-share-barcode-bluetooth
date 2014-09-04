@@ -7,6 +7,8 @@ import com.corneliudascalu.glass.app2.model.Device;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -31,10 +33,30 @@ public class SelectDeviceActivity extends Activity {
                 adapter.setDevices(SelectDeviceActivity.this, devices);
             }
         }, 2000);
+        view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getApplicationContext(),
+                        "Selected " + ((Device) adapter.getItem(position)).getName(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        view.activate();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        view.deactivate();
     }
 
     private View buildView() {
-        adapter = new DeviceCardAdapter();
+        adapter = new DeviceCardAdapter(this);
         view = new CardScrollView(this);
         view.setAdapter(adapter);
         return view;
