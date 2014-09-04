@@ -15,6 +15,6 @@ public interface GetDevicesUseCase {
 
         void onDevicesLoaded(List<Device> devices);
 
-        void onError(Throwable error);
+        void onLoadDeviceListError(Throwable error);
     }
 }
