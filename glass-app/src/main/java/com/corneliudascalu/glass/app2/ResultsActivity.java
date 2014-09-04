@@ -3,7 +3,10 @@ package com.corneliudascalu.glass.app2;
 import com.google.android.glass.view.WindowUtils;
 import com.google.android.glass.widget.CardScrollAdapter;
 import com.google.android.glass.widget.CardScrollView;
+import com.google.gson.GsonBuilder;
 
+import com.corneliudascalu.glass.app2.interactor.SendDataUseCaseImpl;
+import com.corneliudascalu.glass.app2.model.Device;
 import com.github.barcodeeye.scan.CaptureActivity;
 import com.github.barcodeeye.scan.api.CardPresenter;
 
@@ -12,6 +15,7 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
@@ -19,6 +23,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +81,12 @@ public class ResultsActivity extends Activity {
         mCardScrollView.setAdapter(new CardScrollViewAdapter(this,
                 mCardPresenters));
         mCardScrollView.activate();
+        mCardScrollView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                openOptionsMenu();
+            }
+        });
 
         setContentView(mCardScrollView);
     }
@@ -95,13 +108,14 @@ public class ResultsActivity extends Activity {
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        if (featureId == WindowUtils.FEATURE_VOICE_COMMANDS) {
+        if (featureId == WindowUtils.FEATURE_VOICE_COMMANDS
+                || featureId == Window.FEATURE_OPTIONS_PANEL) {
             switch (item.getItemId()) {
                 case R.id.add_to_cart:
                     CardPresenter cardPresenter = mCardPresenters
                             .get(mCardScrollView.getSelectedItemPosition());
                     if (cardPresenter != null) {
-                        // sendData(cardPresenter.getFooter());
+                        sendData(cardPresenter.getFooter());
                     }
                     return true;
                 case R.id.try_again:
@@ -110,6 +124,28 @@ public class ResultsActivity extends Activity {
             }
         }
         return super.onMenuItemSelected(featureId, item);
+    }
+
+    private void sendData(String data) {
+        Device device = getSelectedDevice();
+        if (device.equals(Device.NO_DEVICE)) {
+            Toast.makeText(this, "No device connected", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, SelectDeviceActivity.class));
+        } else {
+            new SendDataUseCaseImpl().execute(device, data);
+            finish();
+        }
+    }
+
+    private Device getSelectedDevice() {
+        SharedPreferences prefs = getSharedPreferences(Device.PREFERENCES_NAME,
+                Context.MODE_PRIVATE);
+        String deviceJson = prefs.getString(Device.SELECTED_DEVICE_KEY, null);
+        if (deviceJson == null) {
+            return Device.NO_DEVICE;
+        } else {
+            return new GsonBuilder().create().fromJson(deviceJson, Device.class);
+        }
     }
 
     private void readExtras(Bundle extras) {

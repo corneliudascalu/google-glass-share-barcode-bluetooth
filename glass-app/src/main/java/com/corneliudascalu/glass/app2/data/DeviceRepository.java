@@ -33,4 +33,11 @@ public class DeviceRepository {
         return devices;
     }
 
+    public boolean sendData(Device device, String data) throws IOException {
+        String url = "http://google.com" + "?data=" + data + "&device=" + device.getToken();
+        Request request = new Request.Builder().url(url).post(null).build();
+        Response response = client.newCall(request).execute();
+        return response.isSuccessful();
+    }
+
 }
