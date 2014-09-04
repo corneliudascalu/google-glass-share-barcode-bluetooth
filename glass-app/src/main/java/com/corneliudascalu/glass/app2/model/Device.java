@@ -7,6 +7,10 @@ import org.apache.commons.lang3.RandomStringUtils;
  */
 public class Device {
 
+    public static final String SELECTED_DEVICE_KEY = "selectedDevice" + Device.class.getName();
+
+    public static final String PREFERENCES_NAME = "prefsName" + Device.class.getName();
+
     private String name;
 
     private String token;
