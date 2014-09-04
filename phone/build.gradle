@@ -31,4 +31,5 @@ dependencies {
     compile 'de.greenrobot:eventbus:2.2.1'
     compile 'joda-time:joda-time:2.4'
     compile 'org.apache.commons:commons-lang3:3.3.2'
+    compile "com.google.android.gms:play-services:3.1.+"
 }
