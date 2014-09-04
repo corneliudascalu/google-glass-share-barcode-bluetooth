@@ -11,6 +11,8 @@ public class Device {
 
     public static final String PREFERENCES_NAME = "prefsName" + Device.class.getName();
 
+    public static final Device NO_DEVICE = new Device("noname", "notoken");
+
     private String name;
 
     private String token;
