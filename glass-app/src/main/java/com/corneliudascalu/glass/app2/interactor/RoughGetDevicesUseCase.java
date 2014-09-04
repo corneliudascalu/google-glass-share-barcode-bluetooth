@@ -1,9 +1,11 @@
 package com.corneliudascalu.glass.app2.interactor;
 
+import com.corneliudascalu.glass.app2.data.DeviceRepository;
 import com.corneliudascalu.glass.app2.model.Device;
 
 import android.os.AsyncTask;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +30,12 @@ public class RoughGetDevicesUseCase extends AsyncTask<Void, Void, List<Device>>
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        ArrayList<Device> devices = new ArrayList<Device>(10);
-        for (int i = 0; i < 10; i++) {
-            devices.add(new Device());
+        DeviceRepository repository = new DeviceRepository();
+        ArrayList<Device> devices = null;
+        try {
+            devices = (ArrayList<Device>) repository.getDevices();
+        } catch (IOException e) {
+            return null;
         }
 
         return devices;
