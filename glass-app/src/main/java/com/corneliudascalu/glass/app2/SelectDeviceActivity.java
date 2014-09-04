@@ -8,31 +8,33 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 public class SelectDeviceActivity extends Activity {
+
 
     private DeviceCardAdapter adapter;
 
-    private CardScrollView view;
+    @InjectView(R.id.deviceScroller)
+    CardScrollView view;
+
+    @InjectView(R.id.deviceProgressBar)
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(buildView());
-        view.postDelayed(new Runnable() {
-            ArrayList<Device> devices = new ArrayList<Device>(10);
+        setContentView(R.layout.select_device);
+        ButterKnife.inject(this, this);
+        adapter = new DeviceCardAdapter(this);
+        view.setAdapter(adapter);
 
-            @Override
-            public void run() {
-                for (int i = 0; i < 10; i++) {
-                    devices.add(new Device());
-                }
-                adapter.setDevices(SelectDeviceActivity.this, devices);
-            }
-        }, 2000);
         view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -41,6 +43,20 @@ public class SelectDeviceActivity extends Activity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+
+        view.postDelayed(new Runnable() {
+            ArrayList<Device> devices = new ArrayList<Device>(10);
+
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.GONE);
+                for (int i = 0; i < 10; i++) {
+                    devices.add(new Device());
+                }
+                adapter.setDevices(SelectDeviceActivity.this, devices);
+                view.setVisibility(View.VISIBLE);
+            }
+        }, 2000);
     }
 
     @Override
@@ -53,12 +69,5 @@ public class SelectDeviceActivity extends Activity {
     protected void onPause() {
         super.onPause();
         view.deactivate();
-    }
-
-    private View buildView() {
-        adapter = new DeviceCardAdapter(this);
-        view = new CardScrollView(this);
-        view.setAdapter(adapter);
-        return view;
     }
 }
