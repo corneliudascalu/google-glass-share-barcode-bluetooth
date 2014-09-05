@@ -22,13 +22,12 @@ public class DeviceRepository {
     private OkHttpClient client = new OkHttpClient();
 
     public List<Device> getDevices() throws IOException {
-        String url = "http://google.com";
+        String url = "http://constantcontact.ofactory.biz/PushNotifService/gglass/devices.php";
         Request request = new Request.Builder().url(url).build();
         Response response = client.newCall(request).execute();
         String json = response.body().string();
 
-        json
-                = "[{\"name\":\"asd\",\"token\":\"asdasd\"},{\"name\":\"asd\",\"token\":\"asdasd\"},{\"name\":\"asd\",\"token\":\"asdasd\"}]";
+        // json= "[{\"name\":\"asd\",\"token\":\"asdasd\"},{\"name\":\"asd\",\"token\":\"asdasd\"},{\"name\":\"asd\",\"token\":\"asdasd\"}]";
         Gson gson = new GsonBuilder().create();
         List<Device> devices = gson.fromJson(json, new TypeToken<List<Device>>() {
         }.getType());
