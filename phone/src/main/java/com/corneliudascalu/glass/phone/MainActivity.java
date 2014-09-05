@@ -1,6 +1,7 @@
 package com.corneliudascalu.glass.phone;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import com.corneliudascalu.glass.phone.service.BackService;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -83,8 +84,7 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_connect:
-                onEventMainThread(new Pair<Integer, String>(Message.MSG_DEBUG,
-                        "Connected as " + RandomStringUtils.random(7)));
+                startService(new Intent(this, BackService.class));
                 return true;
             case R.id.action_clear:
                 textView.setText("");

@@ -1,1 +1,1 @@
-include ':barcodeEye',':app', ':phone', ':glass-app'
+include ':barcodeEye',':app', ':phone', ':glass-app', ':device'

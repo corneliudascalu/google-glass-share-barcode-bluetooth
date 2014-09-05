@@ -6,7 +6,7 @@ import com.corneliudascalu.glass.app2.interactor.GetDevicesUseCase;
 import com.corneliudascalu.glass.app2.interactor.RoughGetDevicesUseCase;
 import com.corneliudascalu.glass.app2.interactor.RoughSelectDeviceUseCase;
 import com.corneliudascalu.glass.app2.interactor.SelectDeviceUseCase;
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 
 import android.app.Activity;
 import android.os.Bundle;

@@ -1,7 +1,7 @@
 package com.corneliudascalu.glass.app2.interactor;
 
-import com.corneliudascalu.glass.app2.data.DeviceRepository;
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.data.DeviceRepository;
+import com.corneliudascalu.glass.device.model.Device;
 
 import android.os.AsyncTask;
 

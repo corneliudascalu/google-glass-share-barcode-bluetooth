@@ -10,7 +10,9 @@
     <permission
         android:name="com.corneliudascalu.glass.phone.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
+
     <uses-permission android:name="com.corneliudascalu.glass.phone.permission.C2D_MESSAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/logo"
@@ -26,6 +28,16 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".GcmReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.permission.RECEIVE" />
+                <category android:name="com.corneliudascalu.glass.phone" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".service.BackService" />
     </application>
 
 </manifest>

@@ -6,7 +6,7 @@ import com.google.android.glass.widget.CardScrollView;
 import com.google.gson.GsonBuilder;
 
 import com.corneliudascalu.glass.app2.interactor.SendDataUseCaseImpl;
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 import com.github.barcodeeye.scan.CaptureActivity;
 import com.github.barcodeeye.scan.api.CardPresenter;
 

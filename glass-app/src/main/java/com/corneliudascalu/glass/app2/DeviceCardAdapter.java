@@ -3,7 +3,7 @@ package com.corneliudascalu.glass.app2;
 import com.google.android.glass.app.Card;
 import com.google.android.glass.widget.CardScrollAdapter;
 
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 
 import android.content.Context;
 import android.view.View;

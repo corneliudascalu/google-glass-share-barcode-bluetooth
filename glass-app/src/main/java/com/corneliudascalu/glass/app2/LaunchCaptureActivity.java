@@ -3,7 +3,7 @@ package com.corneliudascalu.glass.app2;
 import com.google.android.glass.app.Card;
 import com.google.gson.GsonBuilder;
 
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 import com.github.barcodeeye.scan.CaptureActivity;
 
 import android.app.Activity;

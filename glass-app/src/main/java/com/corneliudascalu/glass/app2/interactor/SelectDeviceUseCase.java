@@ -1,6 +1,6 @@
 package com.corneliudascalu.glass.app2.interactor;
 
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>

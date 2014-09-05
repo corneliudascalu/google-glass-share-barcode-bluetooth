@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import com.corneliudascalu.glass.app2.GlassApp;
-import com.corneliudascalu.glass.app2.model.Device;
+import com.corneliudascalu.glass.device.model.Device;
 
 import android.content.Context;
 import android.content.SharedPreferences;

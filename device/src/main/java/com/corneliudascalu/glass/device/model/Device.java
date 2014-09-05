@@ -1,4 +1,4 @@
-package com.corneliudascalu.glass.app2.model;
+package com.corneliudascalu.glass.device.model;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -16,6 +16,8 @@ public class Device {
     private String name;
 
     private String token;
+
+    private int ostype = 2;
 
     public Device() {
         name = RandomStringUtils.randomAlphabetic(7);
