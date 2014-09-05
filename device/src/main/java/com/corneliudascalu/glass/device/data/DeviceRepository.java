@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import com.corneliudascalu.glass.device.model.Device;
+import com.corneliudascalu.glass.device.model.DeviceMessage;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -35,8 +36,14 @@ public class DeviceRepository {
     }
 
     public boolean sendData(Device device, String data) throws IOException {
-        String url = "http://google.com" + "?data=" + data + "&device=" + device.getToken();
-        Request request = new Request.Builder().url(url).post(null).build();
+        String url = "http://constantcontact.ofactory.biz/PushNotifService/gglass/push.php";
+
+        DeviceMessage deviceMessage = DeviceMessage.create(device, data);
+        String body = new GsonBuilder().create().toJson(deviceMessage);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse(body), body);
+
+        Request request = new Request.Builder().url(url).put(requestBody).build();
         Response response = client.newCall(request).execute();
         return response.isSuccessful();
     }
