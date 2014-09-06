@@ -157,7 +157,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onEventMainThread(RegisteredGcmStatusMessage message) {
-        addLogMessage("Device registered to GCM");
+        addLogMessage("Device registered to GCM. ID: " + message.getRegistrationId());
     }
 
     public void onEventMainThread(ConnectingToServerStatusMessage message) {

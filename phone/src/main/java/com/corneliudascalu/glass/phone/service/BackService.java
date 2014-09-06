@@ -90,6 +90,10 @@ public class BackService extends Service {
                 }
             } else {
                 fsm.gotGcmRegistrationId();
+                sendEventMessage(
+                        new RegisteredGcmStatusMessage("Push notification registration OK.",
+                                gcmRegistrationId));
+                device.setToken(gcmRegistrationId);
                 registerToServerInBackground();
             }
         }
@@ -107,8 +111,8 @@ public class BackService extends Service {
         if (result != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(result)) {
                 fsm.cantConnectPlayServices();
-                sendEventMessage(new RecoverableErrorStatusMessage(result, "Recoverable GCM error"));
-                // GooglePlayServicesUtil.getErrorDialog(result, this,PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                sendEventMessage(
+                        new RecoverableErrorStatusMessage(result, "Recoverable GCM error"));
             } else {
                 Log.e(TAG, "This device is not supported.");
                 fsm.playServicesUnsupported();
