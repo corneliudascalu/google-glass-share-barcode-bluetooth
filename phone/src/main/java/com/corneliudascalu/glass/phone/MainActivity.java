@@ -72,13 +72,14 @@ public class MainActivity extends ActionBarActivity {
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setTypeface(Typeface.MONOSPACE);
 
+        Intent intent = new Intent(this, BackService.class);
+        startService(intent);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Intent intent = new Intent(this, BackService.class);
-        startService(intent);
         bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
