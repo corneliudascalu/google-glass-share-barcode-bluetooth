@@ -6,6 +6,13 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import com.corneliudascalu.glass.device.data.DeviceRepository;
 import com.corneliudascalu.glass.device.model.Device;
+import com.corneliudascalu.glass.phone.domain.message.EventMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectingToServerStatusMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectionErrorMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.NoNetworkStatusMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.RegisteredGcmStatusMessage;
+import com.corneliudascalu.glass.phone.domain.message.gcm.DeviceUnsupportedStatusMessage;
+import com.corneliudascalu.glass.phone.domain.message.gcm.RecoverableErrorStatusMessage;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -13,9 +20,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -23,6 +30,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@osf-global.com>
@@ -48,21 +57,16 @@ public class BackService extends Service {
 
     private Device device;
 
+    private ConnectivityManager connectivityManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
+        connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         deviceRepository = new DeviceRepository();
-        String deviceId = Settings.Secure
-                .getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Pattern emailPattern = Patterns.EMAIL_ADDRESS;
-        Account[] accounts = AccountManager.get(this).getAccounts();
-        for (Account account : accounts) {
-            if (emailPattern.matcher(account.name).matches()) {
-                String possibleEmail = account.name;
-                device = new Device(possibleEmail, deviceId);
-                break;
-            }
-        }
+
+        device = createDevice();
     }
 
     @Override
@@ -71,7 +75,11 @@ public class BackService extends Service {
             gcm = GoogleCloudMessaging.getInstance(this);
             gcmRegistrationId = getGcmRegistrationId();
             if (TextUtils.isEmpty(gcmRegistrationId)) {
-                registerInBackground();
+                if (connectivityManager.getActiveNetworkInfo() != null) {
+                    registerGcmInBackground();
+                } else {
+                    sendEventMessage(new NoNetworkStatusMessage("No active network detected"));
+                }
             }
         }
 
@@ -87,10 +95,11 @@ public class BackService extends Service {
         int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
         if (result != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(result)) {
-                // TODO Send intent for activity
+                sendEventMessage(new RecoverableErrorStatusMessage(result, "Recoverable GCM error"));
                 // GooglePlayServicesUtil.getErrorDialog(result, this,PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
-                Log.i(TAG, "This device is not supported.");
+                Log.e(TAG, "This device is not supported.");
+                sendEventMessage(new DeviceUnsupportedStatusMessage(result, "Device not supported"));
             }
             return false;
         }
@@ -106,7 +115,7 @@ public class BackService extends Service {
         return gcmRegistrationId;
     }
 
-    private void registerInBackground() {
+    private void registerGcmInBackground() {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -116,29 +125,15 @@ public class BackService extends Service {
                         gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
                     }
                     gcmRegistrationId = gcm.register(SENDER_ID);
-                    msg = "Device registered, registration ID=" + gcmRegistrationId;
-
-                    boolean registered = sendRegistrationIdToBackend();
-                    if (registered) {
-                        storeRegistrationId(gcmRegistrationId);
-                    } else {
-                        msg = "Failed to register to server";
-                    }
+                    device.setToken(gcmRegistrationId);
+                    sendEventMessage(new RegisteredGcmStatusMessage("Device registered to GCM",
+                            gcmRegistrationId));
+                    msg = registerToServer();
                 } catch (IOException ex) {
                     msg = "Error :" + ex.getMessage();
+                    sendEventMessage(new ConnectionErrorMessage(ex.getMessage(), ex));
                 }
                 return msg;
-            }
-
-            private void storeRegistrationId(String gcmRegistrationId) {
-                SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREF_NAME,
-                        Context.MODE_PRIVATE);
-                prefs.edit().putString(GCM_REGISTRATION_ID_KEY, gcmRegistrationId).apply();
-            }
-
-            private boolean sendRegistrationIdToBackend() throws IOException {
-                device.setToken(gcmRegistrationId);
-                return deviceRepository.registerToServer(device);
             }
 
             @Override
@@ -146,5 +141,63 @@ public class BackService extends Service {
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
             }
         }.execute();
+    }
+
+    private String registerToServer() throws IOException {
+        boolean serverRegistered = sendRegistrationIdToBackend();
+        String msg = "";
+        if (serverRegistered) {
+            sendEventMessage(new ConnectingToServerStatusMessage(
+                    ConnectingToServerStatusMessage.Status.Success,
+                    "Successfully sent registration id to server"));
+            storeRegistrationId(gcmRegistrationId);
+            msg = "Successfully registered to server";
+        } else {
+            msg = "Failed to register to server";
+            sendEventMessage(new ConnectingToServerStatusMessage(
+                    ConnectingToServerStatusMessage.Status.Failed,
+                    "Failed to send registration id to server"));
+        }
+        return msg;
+    }
+
+    private boolean sendRegistrationIdToBackend() throws IOException {
+        return deviceRepository.registerToServer(device);
+    }
+
+    private void storeRegistrationId(String gcmRegistrationId) {
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREF_NAME,
+                Context.MODE_PRIVATE);
+        prefs.edit().putString(GCM_REGISTRATION_ID_KEY, gcmRegistrationId).apply();
+    }
+
+    public void registerToServerInBackground() {
+        new AsyncTask<Void, Void, String>() {
+
+            @Override
+            protected String doInBackground(Void... voids) {
+                try {
+                    return registerToServer();
+                } catch (IOException e) {
+                    return "Failed to register to server";
+                }
+            }
+        }.execute();
+    }
+
+    private Device createDevice() {
+        Pattern emailPattern = Patterns.EMAIL_ADDRESS;
+        Account[] accounts = AccountManager.get(this).getAccounts();
+        for (Account account : accounts) {
+            if (emailPattern.matcher(account.name).matches()) {
+                String possibleEmail = account.name;
+                return new Device(possibleEmail, "");
+            }
+        }
+        return null;
+    }
+
+    private void sendEventMessage(EventMessage message) {
+        EventBus.getDefault().post(message);
     }
 }
