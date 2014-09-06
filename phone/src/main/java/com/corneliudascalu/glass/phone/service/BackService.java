@@ -68,7 +68,6 @@ public class BackService extends Service {
     public void onCreate() {
         super.onCreate();
         localBinder = new LocalBinder();
-        EventBus.getDefault().register(this);
         fsm = new ServiceFsm();
         gcm = GoogleCloudMessaging.getInstance(this);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
