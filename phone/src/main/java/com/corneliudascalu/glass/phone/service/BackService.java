@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -59,10 +60,17 @@ public class BackService extends Service {
 
     private ConnectivityManager connectivityManager;
 
+    private LocalBinder localBinder;
+
+    private ServiceFsm fsm;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        localBinder = new LocalBinder();
         EventBus.getDefault().register(this);
+        fsm = new ServiceFsm();
+        gcm = GoogleCloudMessaging.getInstance(this);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         deviceRepository = new DeviceRepository();
 
@@ -71,15 +79,19 @@ public class BackService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (isPlayServicesConnected()) {
-            gcm = GoogleCloudMessaging.getInstance(this);
+        if (checkPlayServicesConnection()) {
+            fsm.gotPlayServices();
             gcmRegistrationId = getGcmRegistrationId();
             if (TextUtils.isEmpty(gcmRegistrationId)) {
                 if (connectivityManager.getActiveNetworkInfo() != null) {
                     registerGcmInBackground();
                 } else {
+                    fsm.dontHaveActiveNetwork();
                     sendEventMessage(new NoNetworkStatusMessage("No active network detected"));
                 }
+            } else {
+                fsm.gotGcmRegistrationId();
+                registerToServerInBackground();
             }
         }
 
@@ -88,18 +100,21 @@ public class BackService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return localBinder;
     }
 
-    private boolean isPlayServicesConnected() {
+    private boolean checkPlayServicesConnection() {
         int result = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
         if (result != ConnectionResult.SUCCESS) {
             if (GooglePlayServicesUtil.isUserRecoverableError(result)) {
+                fsm.cantConnectPlayServices();
                 sendEventMessage(new RecoverableErrorStatusMessage(result, "Recoverable GCM error"));
                 // GooglePlayServicesUtil.getErrorDialog(result, this,PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 Log.e(TAG, "This device is not supported.");
-                sendEventMessage(new DeviceUnsupportedStatusMessage(result, "Device not supported"));
+                fsm.playServicesUnsupported();
+                sendEventMessage(
+                        new DeviceUnsupportedStatusMessage(result, "Device not supported"));
             }
             return false;
         }
@@ -126,6 +141,7 @@ public class BackService extends Service {
                     }
                     gcmRegistrationId = gcm.register(SENDER_ID);
                     device.setToken(gcmRegistrationId);
+                    fsm.gotGcmRegistrationId();
                     sendEventMessage(new RegisteredGcmStatusMessage("Device registered to GCM",
                             gcmRegistrationId));
                     msg = registerToServer();
@@ -147,6 +163,7 @@ public class BackService extends Service {
         boolean serverRegistered = sendRegistrationIdToBackend();
         String msg = "";
         if (serverRegistered) {
+            fsm.registeredServerSuccessfully();
             sendEventMessage(new ConnectingToServerStatusMessage(
                     ConnectingToServerStatusMessage.Status.Success,
                     "Successfully sent registration id to server"));
@@ -154,6 +171,7 @@ public class BackService extends Service {
             msg = "Successfully registered to server";
         } else {
             msg = "Failed to register to server";
+            fsm.failedToRegisterServer();
             sendEventMessage(new ConnectingToServerStatusMessage(
                     ConnectingToServerStatusMessage.Status.Failed,
                     "Failed to send registration id to server"));
@@ -200,4 +218,12 @@ public class BackService extends Service {
     private void sendEventMessage(EventMessage message) {
         EventBus.getDefault().post(message);
     }
+
+    public class LocalBinder extends Binder {
+
+        public BackService getService() {
+            return BackService.this;
+        }
+    }
+
 }
