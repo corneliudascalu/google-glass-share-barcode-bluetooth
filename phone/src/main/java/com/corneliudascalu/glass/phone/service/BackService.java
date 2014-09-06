@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -169,7 +170,7 @@ public class BackService extends Service {
             fsm.registeredServerSuccessfully();
             sendEventMessage(new ConnectingToServerStatusMessage(
                     ConnectingToServerStatusMessage.Status.Success,
-                    "Successfully sent registration id to server"));
+                    "Connected as " + device.getName()));
             storeRegistrationId(gcmRegistrationId);
             msg = "Successfully registered to server";
         } else {
@@ -212,7 +213,9 @@ public class BackService extends Service {
         for (Account account : accounts) {
             if (emailPattern.matcher(account.name).matches()) {
                 String possibleEmail = account.name;
-                return new Device(possibleEmail, "");
+                String username = possibleEmail.split("@")[0];
+                String model = Build.MODEL;
+                return new Device(username + "'s " + model, "");
             }
         }
         return null;
