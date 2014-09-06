@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="applicationPermission">com.corneliudascalu.glass.phone.permission</string>
+    <string name="backServiceAction">com.corneliudascalu.glass.phone.startBackService</string>
+</resources>

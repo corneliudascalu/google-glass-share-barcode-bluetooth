@@ -14,12 +14,15 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Pair;
@@ -48,10 +51,17 @@ public class MainActivity extends ActionBarActivity {
 
     private DateTimeFormatter formatter;
 
+    private BackService service;
+
+    private boolean bound = false;
+
+    private ServiceConnection connection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
+        connection = getConnection();
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this, this);
         DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
@@ -62,17 +72,25 @@ public class MainActivity extends ActionBarActivity {
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setTypeface(Typeface.MONOSPACE);
 
-        startService(new Intent(this, BackService.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = new Intent(this, BackService.class);
+        startService(intent);
+        bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (bound) {
+            unbindService(connection);
+            addLogMessage("Unbound from background service");
+            service = null;
+            bound = false;
+        }
     }
 
     @Override
@@ -175,5 +193,22 @@ public class MainActivity extends ActionBarActivity {
 
     private void addLogMessage(String text) {
         textView.append(new DateTime().toString(formatter) + " - " + text + "\n");
+    }
+
+    private ServiceConnection getConnection() {
+        return new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                service = ((BackService.LocalBinder) iBinder).getService();
+                addLogMessage("Bound to background service");
+                bound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                addLogMessage("Background service disconnected");
+                bound = false;
+            }
+        };
     }
 }

@@ -2,11 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.corneliudascalu.glass.phone">
 
+    <permission android:name="@string/applicationPermission" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="@string/applicationPermission" />
 
     <permission
         android:name="com.corneliudascalu.glass.phone.permission.C2D_MESSAGE"
@@ -38,7 +41,9 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.BackService" />
+        <service
+            android:name=".service.BackService"
+            android:permission="@string/applicationPermission"/>
     </application>
 
 </manifest>
