@@ -49,9 +49,11 @@ public class DeviceRepository {
     }
 
     public boolean registerToServer(Device device) throws IOException {
+
+        DeviceMessage deviceMessage = DeviceMessage.create(device, null);
         String url = "http://constantcontact.ofactory.biz/PushNotifService/gglass/register.php";
         Gson gson = new GsonBuilder().create();
-        String deviceData = gson.toJson(device);
+        String deviceData = gson.toJson(deviceMessage);
         RequestBody requestBody = RequestBody.create(MediaType.parse(deviceData), deviceData);
         Request request = new Request.Builder().url(url).post(requestBody).build();
         Response response = client.newCall(request).execute();
