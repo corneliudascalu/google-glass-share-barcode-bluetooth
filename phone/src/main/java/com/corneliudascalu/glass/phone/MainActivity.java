@@ -2,8 +2,10 @@ package com.corneliudascalu.glass.phone;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import com.corneliudascalu.glass.device.model.DeviceMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectingToServerStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectionErrorMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.IntentUnhandledMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.NoNetworkStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.RegisteredGcmStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.gcm.DeviceUnsupportedStatusMessage;
@@ -176,6 +178,16 @@ public class MainActivity extends ActionBarActivity {
 
     public void onEventMainThread(ConnectionErrorMessage message) {
         addLogMessage("Connection error: " + message.getException().getMessage());
+    }
+
+    public void onEventMainThread(DeviceMessage deviceMessage) {
+        addLogMessage(
+                "Received: " + deviceMessage.getMessage() + " from " + deviceMessage.getDevice()
+                        .getName());
+    }
+
+    public void onEventMainThread(IntentUnhandledMessage message) {
+        addLogMessage(message.getMessage());
     }
 
     private void handleData(String second) {
