@@ -11,7 +11,8 @@ import java.util.List;
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>
  */
-public class RoughGetDevicesUseCase extends AsyncTask<Void, Void, List<Device>>
+public class RoughGetDevicesUseCase
+        extends AsyncTask<Void, Void, RoughGetDevicesUseCase.GetDevicesResult>
         implements GetDevicesUseCase {
 
     private Callback callback;
@@ -29,21 +30,58 @@ public class RoughGetDevicesUseCase extends AsyncTask<Void, Void, List<Device>>
     }
 
     @Override
-    protected List<Device> doInBackground(Void... params) {
+    protected GetDevicesResult doInBackground(Void... params) {
         try {
-            return deviceRepository.getDevices();
+            return new GetDevicesResult(deviceRepository.getDevices());
         } catch (IOException e) {
-            return null;
+            return new GetDevicesResult(e);
         }
     }
 
     @Override
-    protected void onPostExecute(List<Device> devices) {
-        super.onPostExecute(devices);
+    protected void onPostExecute(GetDevicesResult result) {
+        super.onPostExecute(result);
         if (callback != null) {
-            callback.onDevicesLoaded(devices);
+            if (result.isSuccessful()) {
+                callback.onDevicesLoaded(result.getResult());
+            } else {
+                callback.onLoadDeviceListError(result.getError());
+            }
         }
     }
 
+    class GetDevicesResult implements RequestResult<List<Device>> {
+
+        private final boolean success;
+
+        public GetDevicesResult(List<Device> devices) {
+            result = devices;
+            success = true;
+        }
+
+        public GetDevicesResult(Exception e) {
+            exception = e;
+            success = false;
+        }
+
+        private List<Device> result;
+
+        private Exception exception;
+
+        @Override
+        public List<Device> getResult() {
+            return result;
+        }
+
+        @Override
+        public Exception getError() {
+            return exception;
+        }
+
+        @Override
+        public boolean isSuccessful() {
+            return success;
+        }
+    }
 
 }
