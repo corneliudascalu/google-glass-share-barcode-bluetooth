@@ -1,13 +1,9 @@
 package com.corneliudascalu.glass.app2.interactor;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import com.corneliudascalu.glass.app2.GlassApp;
+import com.corneliudascalu.glass.device.data.DeviceRepository;
 import com.corneliudascalu.glass.device.model.Device;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 /**
@@ -16,7 +12,13 @@ import android.os.AsyncTask;
 public class RoughSelectDeviceUseCase extends AsyncTask<Device, Void, Boolean>
         implements SelectDeviceUseCase {
 
+    private final DeviceRepository repository;
+
     private Callback callback;
+
+    public RoughSelectDeviceUseCase(DeviceRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public void execute(Device device, Callback callback) {
@@ -26,11 +28,7 @@ public class RoughSelectDeviceUseCase extends AsyncTask<Device, Void, Boolean>
 
     @Override
     protected Boolean doInBackground(Device... params) {
-        Gson gson = new GsonBuilder().create();
-        String deviceJson = gson.toJson(params[0]);
-        SharedPreferences prefs = GlassApp.getInstance()
-                .getSharedPreferences(Device.PREFERENCES_NAME,Context.MODE_PRIVATE);
-        prefs.edit().putString(Device.SELECTED_DEVICE_KEY, deviceJson).apply();
+        repository.saveSelectedDevice(GlassApp.getInstance(), params[0]);
 
         return true;
     }

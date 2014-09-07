@@ -6,7 +6,6 @@ import com.corneliudascalu.glass.device.model.Device;
 import android.os.AsyncTask;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +16,12 @@ public class RoughGetDevicesUseCase extends AsyncTask<Void, Void, List<Device>>
 
     private Callback callback;
 
+    private DeviceRepository deviceRepository;
+
+    public RoughGetDevicesUseCase(DeviceRepository deviceRepository) {
+        this.deviceRepository = deviceRepository;
+    }
+
     @Override
     public void execute(Callback callback) {
         this.callback = callback;
@@ -26,19 +31,10 @@ public class RoughGetDevicesUseCase extends AsyncTask<Void, Void, List<Device>>
     @Override
     protected List<Device> doInBackground(Void... params) {
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        DeviceRepository repository = new DeviceRepository();
-        ArrayList<Device> devices = null;
-        try {
-            devices = (ArrayList<Device>) repository.getDevices();
+            return deviceRepository.getDevices();
         } catch (IOException e) {
             return null;
         }
-
-        return devices;
     }
 
     @Override

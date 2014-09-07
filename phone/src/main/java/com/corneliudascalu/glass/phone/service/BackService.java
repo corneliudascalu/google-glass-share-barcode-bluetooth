@@ -5,6 +5,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import com.corneliudascalu.glass.device.data.DeviceRepository;
+import com.corneliudascalu.glass.device.data.DeviceRepositoryImpl;
 import com.corneliudascalu.glass.device.model.Device;
 import com.corneliudascalu.glass.phone.domain.message.EventMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectingToServerStatusMessage;
@@ -73,7 +74,7 @@ public class BackService extends Service {
         fsm = new ServiceFsm();
         gcm = GoogleCloudMessaging.getInstance(this);
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        deviceRepository = new DeviceRepository();
+        deviceRepository = new DeviceRepositoryImpl();
 
         device = createDevice();
     }

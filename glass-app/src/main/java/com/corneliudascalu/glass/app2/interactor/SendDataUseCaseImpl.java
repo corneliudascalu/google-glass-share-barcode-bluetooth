@@ -1,7 +1,7 @@
 package com.corneliudascalu.glass.app2.interactor;
 
 import com.corneliudascalu.glass.app2.GlassApp;
-import com.corneliudascalu.glass.device.data.DeviceRepository;
+import com.corneliudascalu.glass.device.data.DeviceRepositoryImpl;
 import com.corneliudascalu.glass.device.model.Device;
 
 import android.os.AsyncTask;
@@ -24,7 +24,7 @@ public class SendDataUseCaseImpl extends AsyncTask<Pair<String, Device>, Void, T
     @Override
     protected Throwable doInBackground(Pair<String, Device>... params) {
         try {
-            boolean b = new DeviceRepository().sendData(params[0].second, params[0].first);
+            boolean b = new DeviceRepositoryImpl().sendData(params[0].second, params[0].first);
         } catch (IOException e) {
             return e;
         }

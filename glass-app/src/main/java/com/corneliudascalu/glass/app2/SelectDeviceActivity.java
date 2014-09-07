@@ -6,6 +6,8 @@ import com.corneliudascalu.glass.app2.interactor.GetDevicesUseCase;
 import com.corneliudascalu.glass.app2.interactor.RoughGetDevicesUseCase;
 import com.corneliudascalu.glass.app2.interactor.RoughSelectDeviceUseCase;
 import com.corneliudascalu.glass.app2.interactor.SelectDeviceUseCase;
+import com.corneliudascalu.glass.device.data.DeviceRepository;
+import com.corneliudascalu.glass.device.data.DeviceRepositoryImpl;
 import com.corneliudascalu.glass.device.model.Device;
 
 import android.app.Activity;
@@ -32,15 +34,20 @@ public class SelectDeviceActivity extends Activity implements GetDevicesUseCase.
     @InjectView(R.id.deviceProgressBar)
     ProgressBar progressBar;
 
-    private GetDevicesUseCase getDevicesUseCase = new RoughGetDevicesUseCase();
+    private DeviceRepository repository;
 
-    private SelectDeviceUseCase selectDeviceUseCase = new RoughSelectDeviceUseCase();
+    private GetDevicesUseCase getDevicesUseCase;
+
+    private SelectDeviceUseCase selectDeviceUseCase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_device);
         ButterKnife.inject(this, this);
+        repository = new DeviceRepositoryImpl();
+        getDevicesUseCase = new RoughGetDevicesUseCase(repository);
+        selectDeviceUseCase = new RoughSelectDeviceUseCase(repository);
         adapter = new DeviceCardAdapter(this);
         cardScrollView.setAdapter(adapter);
 
