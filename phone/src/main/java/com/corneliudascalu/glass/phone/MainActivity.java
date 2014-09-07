@@ -19,22 +19,15 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -130,21 +123,6 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void onEventMainThread(Pair<Integer, String> pair) {
-        switch (pair.first) {
-            case Message.MSG_CONNECTED:
-                addLogMessage(pair.second);
-                break;
-            case Message.MSG_READ_DATA:
-                handleData(pair.second);
-                addLogMessage(pair.second);
-                break;
-            case Message.MSG_DEBUG:
-                addLogMessage(pair.second);
-                break;
-        }
-    }
-
     public void onEventMainThread(NoNetworkStatusMessage message) {
         addLogMessage("No active network connection");
     }
@@ -188,20 +166,6 @@ public class MainActivity extends ActionBarActivity {
 
     public void onEventMainThread(IntentUnhandledMessage message) {
         addLogMessage(message.getMessage());
-    }
-
-    private void handleData(String second) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(second));
-
-        PackageManager manager = getApplicationContext().getPackageManager();
-        List<ResolveInfo> activities = manager.queryIntentActivities(intent, 0);
-        if (activities.size() > 0) {
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "There is no application to handle this barcode",
-                    Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void addLogMessage(String text) {
