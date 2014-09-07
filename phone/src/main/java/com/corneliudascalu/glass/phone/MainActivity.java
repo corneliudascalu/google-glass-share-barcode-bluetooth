@@ -8,6 +8,7 @@ import com.corneliudascalu.glass.phone.domain.message.backservice.ConnectionErro
 import com.corneliudascalu.glass.phone.domain.message.backservice.IntentUnhandledMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.NoNetworkStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.RegisteredGcmStatusMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.UnsupportedFormatMessage;
 import com.corneliudascalu.glass.phone.domain.message.gcm.DeviceUnsupportedStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.gcm.RecoverableErrorStatusMessage;
 import com.corneliudascalu.glass.phone.service.BackService;
@@ -179,6 +180,10 @@ public class MainActivity extends ActionBarActivity {
 
     public void onEventMainThread(IntentUnhandledMessage message) {
         addLogMessage(message.getMessage());
+    }
+
+    public void onEventMainThread(UnsupportedFormatMessage message) {
+        addLogMessage("Received unknown message: " + message.getMessage());
     }
 
     private void addLogMessage(String text) {

@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.corneliudascalu.glass.device.model.Device;
 import com.corneliudascalu.glass.device.model.DeviceMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.IntentUnhandledMessage;
+import com.corneliudascalu.glass.phone.domain.message.backservice.UnsupportedFormatMessage;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -40,9 +41,13 @@ public class GcmReceiver extends BroadcastReceiver {
         } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equalsIgnoreCase(messageType)) {
             String message = intent.getStringExtra("Message");
             String deviceString = intent.getStringExtra("Device");
-            sendNotification(context, deviceString, message);
-            sendEventMessage(message, deviceString);
-            openUrl(context, message);
+            if (message != null && deviceString != null) {
+                sendNotification(context, deviceString, message);
+                sendEventMessage(message, deviceString);
+                openUrl(context, message);
+            } else {
+                EventBus.getDefault().post(new UnsupportedFormatMessage(intent.getExtras().toString()));
+            }
         }
     }
 
