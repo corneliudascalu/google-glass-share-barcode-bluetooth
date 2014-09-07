@@ -12,6 +12,8 @@ import com.corneliudascalu.glass.phone.domain.message.backservice.UnsupportedFor
 import com.corneliudascalu.glass.phone.domain.message.gcm.DeviceUnsupportedStatusMessage;
 import com.corneliudascalu.glass.phone.domain.message.gcm.RecoverableErrorStatusMessage;
 import com.corneliudascalu.glass.phone.service.BackService;
+import com.corneliudascalu.glass.phone.service.BackServiceImpl;
+import com.corneliudascalu.glass.phone.service.LocalBinder;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -71,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
         textView.setTypeface(Typeface.MONOSPACE);
 
         if (savedInstanceState == null) {
-            Intent intent = new Intent(this, BackService.class);
+            Intent intent = new Intent(this, BackServiceImpl.class);
             startService(intent);
         } else {
             String logText = savedInstanceState.getString(LOG_EXTRA);
@@ -82,7 +84,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Intent intent = new Intent(this, BackService.class);
+        Intent intent = new Intent(this, BackServiceImpl.class);
         bindService(intent, connection, BIND_AUTO_CREATE);
     }
 
@@ -114,6 +116,7 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_connect:
+                service.forceGcmRegistration();
                 return true;
             case R.id.action_clear:
                 textView.setText("");
@@ -194,7 +197,7 @@ public class MainActivity extends ActionBarActivity {
         return new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                service = ((BackService.LocalBinder) iBinder).getService();
+                service = ((LocalBinder) iBinder).getService();
                 addLogMessage("Bound to background service");
                 bound = true;
             }

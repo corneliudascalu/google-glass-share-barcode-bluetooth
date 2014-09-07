@@ -3,9 +3,7 @@ package com.corneliudascalu.glass.phone.service;
 /**
  * @author Corneliu Dascalu <corneliu.dascalu@gmail.com>
  */
-public interface BackService {
+public interface LocalBinder {
 
-    void forceGcmRegistration();
-
-    void registerToServerInBackground();
+    BackService getService();
 }

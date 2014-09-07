@@ -43,7 +43,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.BackService" />
+        <service android:name=".service.BackServiceImpl" />
     </application>
 
 </manifest>
