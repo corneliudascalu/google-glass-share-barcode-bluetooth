@@ -38,6 +38,8 @@ public class MainActivity extends ActionBarActivity {
 
     public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1;
 
+    public static final String LOG_EXTRA = "LOG_EXTRA";
+
     @InjectView(R.id.text)
     TextView textView;
 
@@ -67,8 +69,13 @@ public class MainActivity extends ActionBarActivity {
         textView.setMovementMethod(new ScrollingMovementMethod());
         textView.setTypeface(Typeface.MONOSPACE);
 
-        Intent intent = new Intent(this, BackService.class);
-        startService(intent);
+        if (savedInstanceState == null) {
+            Intent intent = new Intent(this, BackService.class);
+            startService(intent);
+        } else {
+            String logText = savedInstanceState.getString(LOG_EXTRA);
+            textView.setText(logText);
+        }
     }
 
     @Override
@@ -76,6 +83,12 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         Intent intent = new Intent(this, BackService.class);
         bindService(intent, connection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(LOG_EXTRA, String.valueOf(textView.getText()));
+        super.onSaveInstanceState(outState);
     }
 
     @Override
