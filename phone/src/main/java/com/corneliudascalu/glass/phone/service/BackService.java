@@ -25,6 +25,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
@@ -208,6 +209,7 @@ public class BackService extends Service {
     }
 
     private Device createDevice() {
+        String uuid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         Pattern emailPattern = Patterns.EMAIL_ADDRESS;
         Account[] accounts = AccountManager.get(this).getAccounts();
         for (Account account : accounts) {
@@ -215,7 +217,7 @@ public class BackService extends Service {
                 String possibleEmail = account.name;
                 String username = possibleEmail.split("@")[0];
                 String model = Build.MODEL;
-                return new Device(username + "'s " + model, "");
+                return new Device(username + "'s " + model, "", uuid);
             }
         }
         return null;

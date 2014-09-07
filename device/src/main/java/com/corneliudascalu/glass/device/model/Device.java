@@ -11,7 +11,7 @@ public class Device {
 
     public static final String PREFERENCES_NAME = "prefsName" + Device.class.getName();
 
-    public static final Device NO_DEVICE = new Device("noname", "notoken");
+    public static final Device NO_DEVICE = new Device("noname", "notoken", "nouuid");
 
     private String name;
 
@@ -19,14 +19,17 @@ public class Device {
 
     private int ostype = 2;
 
+    private String uuid;
+
     public Device() {
         name = RandomStringUtils.randomAlphabetic(7);
         token = RandomStringUtils.randomAlphanumeric(20);
     }
 
-    public Device(String name, String token) {
+    public Device(String name, String token, String uuid) {
         this.name = name;
         this.token = token;
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -43,5 +46,13 @@ public class Device {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }
