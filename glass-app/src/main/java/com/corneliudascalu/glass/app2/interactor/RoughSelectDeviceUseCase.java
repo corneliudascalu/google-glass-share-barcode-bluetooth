@@ -26,11 +26,6 @@ public class RoughSelectDeviceUseCase extends AsyncTask<Device, Void, Boolean>
 
     @Override
     protected Boolean doInBackground(Device... params) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         Gson gson = new GsonBuilder().create();
         String deviceJson = gson.toJson(params[0]);
         SharedPreferences prefs = GlassApp.getInstance()
