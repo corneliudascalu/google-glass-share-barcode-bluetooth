@@ -9,6 +9,7 @@ import com.corneliudascalu.glass.app2.interactor.SelectDeviceUseCase;
 import com.corneliudascalu.glass.device.data.DeviceRepository;
 import com.corneliudascalu.glass.device.data.DeviceRepositoryImpl;
 import com.corneliudascalu.glass.device.model.Device;
+import com.github.barcodeeye.scan.CaptureActivity;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -98,7 +99,7 @@ public class SelectDeviceActivity extends Activity implements GetDevicesUseCase.
     @Override
     public void onDeviceSelected() {
         Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
-        finish();
+        startActivity(CaptureActivity.newIntent(this));
     }
 
     @Override
