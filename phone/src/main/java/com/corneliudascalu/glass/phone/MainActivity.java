@@ -25,7 +25,9 @@ import android.content.ServiceConnection;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,6 +58,8 @@ public class MainActivity extends ActionBarActivity {
     private boolean bound = false;
 
     private ServiceConnection connection;
+
+    private ShareActionProvider shareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +112,12 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem shareMenuItem = menu.findItem(R.id.action_share_log);
+
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareMenuItem);
+        if (shareActionProvider != null) {
+            shareActionProvider.setShareIntent(getDefaultShareIntent());
+        }
         return true;
     }
 
@@ -191,6 +201,10 @@ public class MainActivity extends ActionBarActivity {
 
     private void addLogMessage(String text) {
         textView.append(new DateTime().toString(formatter) + " - " + text + "\n");
+        if (shareActionProvider != null) {
+            shareActionProvider
+                    .setShareIntent(getShareLogIntent(String.valueOf(textView.getText())));
+        }
     }
 
     private ServiceConnection getConnection() {
@@ -208,5 +222,18 @@ public class MainActivity extends ActionBarActivity {
                 bound = false;
             }
         };
+    }
+
+    private Intent getDefaultShareIntent() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        return intent;
+    }
+
+    private Intent getShareLogIntent(String logText) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, logText);
+        return intent;
     }
 }
