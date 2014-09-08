@@ -1,10 +1,8 @@
 package com.corneliudascalu.glass.phone;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-import com.google.gson.GsonBuilder;
 
-import com.corneliudascalu.glass.device.model.Device;
-import com.corneliudascalu.glass.device.model.DeviceMessage;
+import com.corneliudascalu.glass.device.model.NotificationMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.IntentUnhandledMessage;
 import com.corneliudascalu.glass.phone.domain.message.backservice.UnsupportedFormatMessage;
 
@@ -40,13 +38,14 @@ public class GcmReceiver extends BroadcastReceiver {
             sendNotification(context, intent.getExtras().toString(), "Deleted");
         } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equalsIgnoreCase(messageType)) {
             String message = intent.getStringExtra("Message");
-            String deviceString = intent.getStringExtra("Device");
-            if (message != null && deviceString != null) {
-                sendNotification(context, deviceString, message);
-                sendEventMessage(message, deviceString);
+            String title = intent.getStringExtra("title");
+            if (message != null && title != null) {
+                sendNotification(context, title, message);
+                sendEventMessage(message, title);
                 openUrl(context, message);
             } else {
-                EventBus.getDefault().post(new UnsupportedFormatMessage(intent.getExtras().toString()));
+                EventBus.getDefault()
+                        .post(new UnsupportedFormatMessage(intent.getExtras().toString()));
             }
         }
     }
@@ -83,9 +82,8 @@ public class GcmReceiver extends BroadcastReceiver {
         mNotificationManager.notify(2, mBuilder.build());
     }
 
-    private void sendEventMessage(String message, String deviceString) {
-        Device device = new GsonBuilder().create().fromJson(deviceString, Device.class);
-        DeviceMessage deviceMessage = DeviceMessage.create(device, message);
-        EventBus.getDefault().post(deviceMessage);
+    private void sendEventMessage(String message, String title) {
+        NotificationMessage notificationMessage = new NotificationMessage(title, message);
+        EventBus.getDefault().post(notificationMessage);
     }
 }
