@@ -87,6 +87,7 @@
     <orderEntry type="library" exported="" name="support-annotations-20.0.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-5.0.89" level="project" />
     <orderEntry type="library" exported="" name="support-v4-20.0.0" level="project" />
+    <orderEntry type="library" exported="" name="crashlytics-1.1.11" level="project" />
     <orderEntry type="library" exported="" name="gson-2.3" level="project" />
     <orderEntry type="library" exported="" name="joda-time-2.4" level="project" />
     <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />

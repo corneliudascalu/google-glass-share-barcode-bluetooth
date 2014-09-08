@@ -44,6 +44,7 @@
         </receiver>
 
         <service android:name=".service.BackServiceImpl" />
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="897dc5d06b22262f804af6faf592a8608ea0b26c"/>
     </application>
 
 </manifest>

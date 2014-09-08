@@ -1,5 +1,6 @@
 package com.corneliudascalu.glass.phone;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import com.corneliudascalu.glass.device.model.NotificationMessage;
@@ -64,6 +65,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.start(this);
         EventBus.getDefault().register(this);
         connection = getConnection();
         setContentView(R.layout.activity_main);

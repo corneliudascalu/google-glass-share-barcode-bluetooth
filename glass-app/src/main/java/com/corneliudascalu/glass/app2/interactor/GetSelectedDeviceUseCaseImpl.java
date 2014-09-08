@@ -14,17 +14,28 @@ public class GetSelectedDeviceUseCaseImpl extends AsyncTask<Void, Void, Device>
 
     private final DeviceRepository repository;
 
+    private Callback callback;
+
     public GetSelectedDeviceUseCaseImpl(DeviceRepository repository) {
         this.repository = repository;
     }
 
     @Override
     public void execute(Callback callback) {
+        this.callback = callback;
         execute();
     }
 
     @Override
     protected Device doInBackground(Void... params) {
         return repository.getSelectedDevice(GlassApp.getInstance());
+    }
+
+    @Override
+    protected void onPostExecute(Device device) {
+        super.onPostExecute(device);
+        if (callback != null) {
+            callback.onDeviceFound(device);
+        }
     }
 }
