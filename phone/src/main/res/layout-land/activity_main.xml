@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:scaleType="fitStart"
         android:adjustViewBounds="true"
-        android:src="@drawable/logo" />
+        android:src="@drawable/icon_osf_2048" />
 
     <TextView
         android:id="@+id/text"

@@ -8,19 +8,23 @@
         android:title="@string/sendLog"
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_action_share"
+        android:visible="false"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider" />
     <item
         android:id="@+id/action_connect"
         android:title="@string/connect"
         app:showAsAction="ifRoom"
+        android:visible="false"
         android:icon="@drawable/ic_action_refresh" />
     <item
         android:id="@+id/action_clear"
         android:title="@string/action_clear"
+        android:visible="false"
         android:icon="@drawable/ic_action_discard"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_about"
         android:title="@string/about"
+        android:visible="false"
         android:icon="@drawable/ic_action_about" />
 </menu>

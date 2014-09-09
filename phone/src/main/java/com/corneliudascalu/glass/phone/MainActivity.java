@@ -1,6 +1,5 @@
 package com.corneliudascalu.glass.phone;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import com.corneliudascalu.glass.device.model.NotificationMessage;
@@ -15,6 +14,7 @@ import com.corneliudascalu.glass.phone.domain.message.gcm.RecoverableErrorStatus
 import com.corneliudascalu.glass.phone.service.BackService;
 import com.corneliudascalu.glass.phone.service.BackServiceImpl;
 import com.corneliudascalu.glass.phone.service.LocalBinder;
+import com.crashlytics.android.Crashlytics;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -32,6 +32,7 @@ import android.support.v7.widget.ShareActionProvider;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -69,6 +70,7 @@ public class MainActivity extends ActionBarActivity {
         EventBus.getDefault().register(this);
         connection = getConnection();
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ButterKnife.inject(this, this);
         DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
         formatter = builder.appendHourOfDay(2).appendLiteral(':')
