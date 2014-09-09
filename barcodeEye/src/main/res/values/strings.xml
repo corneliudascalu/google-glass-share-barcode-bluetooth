@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (C) 2010 ZXing authors
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -143,7 +142,8 @@
     <string name="action_help">Help</string>
     <string name="text_barcode_label">Generic</string>
     <string name="isbn_barcode_label">ISBN</string>
-    <string name="website_barcode_label">Website</string>
+    <string name="website_barcode_label">OSF Google Glass Project</string>
     <string name="product_barcode_label">Product </string>
+    <string name="invalid_barcode_label">Invalid QR code</string>
 
 </resources>

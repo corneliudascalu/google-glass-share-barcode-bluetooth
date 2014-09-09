@@ -33,16 +33,19 @@ public class TextResultProcessor extends ResultProcessor<ParsedResult> {
         String codeValue = parsedResult.getDisplayResult();
 
         CardPresenter cardPresenter = new CardPresenter();
-        cardPresenter.setText(getContext().getString(R.string.text_barcode_label)).setFooter(
+        cardPresenter.setType(CardPresenter.Type.Unknown);
+        cardPresenter.setText(getContext().getString(R.string.invalid_barcode_label)).setFooter(
                 codeValue);
+
+        if (getPhotoUri() != null) {
+            cardPresenter.addImage(getPhotoUri());
+        }
+        cardPresenter.addImage(getContext(), R.drawable.logo);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(String.format(SEARCH_URL, codeValue)));
         cardPresenter.setPendingIntent(createPendingIntent(getContext(), intent));
 
-        if (getPhotoUri() != null) {
-            cardPresenter.addImage(getPhotoUri());
-        }
         cardPresenters.add(cardPresenter);
 
         return cardPresenters;

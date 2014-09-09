@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
@@ -59,6 +60,7 @@ public class ResultsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(WindowUtils.FEATURE_VOICE_COMMANDS);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Intent intent = getIntent();
         if (savedInstanceState != null) {
@@ -78,8 +80,8 @@ public class ResultsActivity extends Activity {
         }
 
         mCardScrollView = new CardScrollView(this);
-        mCardScrollView.setAdapter(new CardScrollViewAdapter(this,
-                mCardPresenters));
+        mCardScrollView.setBackgroundResource(R.drawable.white);
+        mCardScrollView.setAdapter(new CardScrollViewAdapter(this, mCardPresenters));
         mCardScrollView.activate();
         mCardScrollView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -89,6 +91,18 @@ public class ResultsActivity extends Activity {
         });
 
         setContentView(mCardScrollView);
+
+        for (CardPresenter mCardPresenter : mCardPresenters) {
+            if (CardPresenter.Type.Unknown == mCardPresenter.getType()
+                    || CardPresenter.Type.Generic == mCardPresenter.getType()) {
+                mCardScrollView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                }, 2000);
+            }
+        }
     }
 
     @Override
@@ -180,7 +194,9 @@ public class ResultsActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             CardPresenter cardPresenter = mCardPresenters.get(position);
-            return cardPresenter.getCardView(mContext);
+            View cardView = cardPresenter.getCardView(mContext);
+            cardView.setBackgroundResource(R.drawable.white);
+            return cardView;
         }
 
         @Override

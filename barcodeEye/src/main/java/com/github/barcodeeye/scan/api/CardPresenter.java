@@ -18,10 +18,16 @@ import java.util.List;
 public class CardPresenter implements Parcelable {
 
     private static final String TAG = CardPresenter.class.getSimpleName();
+
     private final List<Uri> mImages = new ArrayList<Uri>();
+
     private String mText;
+
     private String mFooter;
+
     private PendingIntent mPendingIntent;
+
+    private Type type = Type.Generic;
 
     public CardPresenter() {
     }
@@ -83,8 +89,10 @@ public class CardPresenter implements Parcelable {
     }
 
     public View getCardView(Context context) {
+
         Card card = new Card(context);
         card.setText(mText);
+        card.setImageLayout(Card.ImageLayout.FULL);
         // card.setFootnote(mFooter);
         for (Uri uri : mImages) {
             if (uri != null) {
@@ -111,6 +119,7 @@ public class CardPresenter implements Parcelable {
         mText = in.readString();
         mFooter = in.readString();
         mPendingIntent = in.readParcelable(PendingIntent.class.getClassLoader());
+        type = Type.values()[in.readInt()];
     }
 
     @Override
@@ -124,9 +133,11 @@ public class CardPresenter implements Parcelable {
         dest.writeString(mText);
         dest.writeString(mFooter);
         dest.writeParcelable(mPendingIntent, 0);
+        dest.writeInt(type.ordinal());
     }
 
-    public static final Parcelable.Creator<CardPresenter> CREATOR = new Parcelable.Creator<CardPresenter>() {
+    public static final Parcelable.Creator<CardPresenter> CREATOR
+            = new Parcelable.Creator<CardPresenter>() {
         @Override
         public CardPresenter createFromParcel(Parcel in) {
             return new CardPresenter(in);
@@ -137,4 +148,20 @@ public class CardPresenter implements Parcelable {
             return new CardPresenter[size];
         }
     };
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public enum Type {
+        Generic,
+        Uri,
+        ISBN,
+        Product,
+        Unknown
+    }
 }

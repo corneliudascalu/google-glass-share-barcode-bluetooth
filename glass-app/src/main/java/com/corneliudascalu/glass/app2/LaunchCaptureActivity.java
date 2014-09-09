@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 /**
@@ -24,6 +25,7 @@ public class LaunchCaptureActivity extends Activity implements GetSelectedDevice
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(buildView());
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         DeviceRepository repository = new DeviceRepositoryImpl();
         new GetSelectedDeviceUseCaseImpl(repository).execute(this);
     }

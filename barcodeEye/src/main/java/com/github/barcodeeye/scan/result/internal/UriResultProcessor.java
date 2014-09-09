@@ -30,10 +30,12 @@ public class UriResultProcessor extends ResultProcessor<URIParsedResult> {
         CardPresenter cardPresenter = new CardPresenter()
                 .setText(getContext().getString(R.string.website_barcode_label))
                 .setFooter(parsedResult.getDisplayResult());
+        cardPresenter.setType(CardPresenter.Type.Uri);
 
         if (getPhotoUri() != null) {
             cardPresenter.addImage(getPhotoUri());
         }
+        cardPresenter.addImage(getContext(), R.drawable.logo);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(parsedResult.getURI()));

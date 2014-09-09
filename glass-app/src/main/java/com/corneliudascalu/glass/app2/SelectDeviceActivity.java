@@ -14,6 +14,7 @@ import com.github.barcodeeye.scan.CaptureActivity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class SelectDeviceActivity extends Activity implements GetDevicesUseCase.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_device);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ButterKnife.inject(this, this);
         repository = new DeviceRepositoryImpl();
         getDevicesUseCase = new RoughGetDevicesUseCase(repository);
